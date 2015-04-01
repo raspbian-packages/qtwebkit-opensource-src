@@ -1966,6 +1966,9 @@ ALWAYS_INLINE void TCMalloc_PageHeap::suspendScavenger()
 void TCMalloc_PageHeap::initializeScavenger()
 {
     // Create a non-recursive mutex.
+#if defined(__GNU__)
+    pthread_mutex_init(&m_scavengeMutex, 0);
+#else
 #if !defined(PTHREAD_MUTEX_NORMAL) || PTHREAD_MUTEX_NORMAL == PTHREAD_MUTEX_DEFAULT
     pthread_mutex_init(&m_scavengeMutex, 0);
 #else
@@ -1976,6 +1979,7 @@ void TCMalloc_PageHeap::initializeScavenger()
     pthread_mutex_init(&m_scavengeMutex, &attr);
 
     pthread_mutexattr_destroy(&attr);
+#endif
 #endif
 
     pthread_cond_init(&m_scavengeCondition, 0);
