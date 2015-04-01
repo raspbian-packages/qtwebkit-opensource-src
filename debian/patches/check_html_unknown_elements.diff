@@ -1,0 +1,81 @@
+Description: need to check if some HTML child elements are HTMLUnknownElement
+ Based on upstream fix http://trac.webkit.org/changeset/156953
+ .
+ The check for whether an element is an HTMLAudioElement or not was
+ incomplete. An element can have the 'audio' tag-name but still be
+ another element if media elements have been disabled. In this
+ case it will be an HTMLUnknownElement.
+Origin: upstream, http://code.qt.io/cgit/qt/qtwebkit.git/commit/?id=d84668b5124b2dd9
+Bug-Debian: https://bugs.debian.org/781194
+Last-Update: 2015-04-01
+
+--- a/Source/WebCore/dom/make_names.pl
++++ b/Source/WebCore/dom/make_names.pl
+@@ -390,6 +390,10 @@
+     my ($F, $tagName, $interfaceName, $constructorTagName) = @_;
+ 
+     # Handle media elements.
++    # Note that wrapperOnlyIfMediaIsAvailable is a misnomer, because media availability
++    # does not just control the wrapper; it controls the element object that is created.
++    # FIXME: Could we instead do this entirely in the wrapper, and use custom wrappers
++    # instead of having all the support for this here in this script?
+     if ($enabledTags{$tagName}{wrapperOnlyIfMediaIsAvailable}) {
+         print F <<END
+     Settings* settings = document->settings();
+@@ -1042,14 +1046,11 @@
+             print F "#if ${conditionalString}\n\n";
+         }
+ 
+-        # Hack for the media tags
+-        # FIXME: This should have been done via a CustomWrapper attribute and a separate *Custom file.
+         if ($enabledTags{$tagName}{wrapperOnlyIfMediaIsAvailable}) {
+             print F <<END
+ static JSDOMWrapper* create${JSInterfaceName}Wrapper(ExecState* exec, JSDOMGlobalObject* globalObject, PassRefPtr<$parameters{namespace}Element> element)
+ {
+-    Settings* settings = element->document()->settings();
+-    if (!MediaPlayer::isAvailable() || (settings && !settings->mediaEnabled()))
++    if (element->isHTMLUnknownElement())
+         return CREATE_DOM_WRAPPER(exec, globalObject, $parameters{namespace}Element, element.get());
+     return CREATE_DOM_WRAPPER(exec, globalObject, ${JSInterfaceName}, element.get());
+ }
+--- a/Source/WebCore/html/HTMLAudioElement.h
++++ b/Source/WebCore/html/HTMLAudioElement.h
+@@ -43,14 +43,19 @@
+     HTMLAudioElement(const QualifiedName&, Document*, bool);
+ };
+ 
+-inline bool isHTMLAudioElement(Node* node)
++inline bool isHTMLAudioElement(HTMLElement* element)
+ {
+-    return node->hasTagName(HTMLNames::audioTag);
++    return !element->isHTMLUnknownElement() && element->hasTagName(HTMLNames::audioTag);
+ }
+ 
+ inline bool isHTMLAudioElement(Element* element)
+ {
+-    return element->hasTagName(HTMLNames::audioTag);
++    return element->isHTMLElement() && isHTMLAudioElement(toHTMLElement(element));
++}
++
++inline bool isHTMLAudioElement(Node* node)
++{
++    return node->isHTMLElement() && isHTMLAudioElement(toHTMLElement(node));
+ }
+ 
+ inline HTMLAudioElement* toHTMLAudioElement(Node* node)
+--- a/Source/WebCore/html/HTMLMediaElement.cpp
++++ b/Source/WebCore/html/HTMLMediaElement.cpp
+@@ -2379,6 +2379,13 @@
+ 
+ bool HTMLMediaElement::paused() const
+ {
++    // As of this writing, JavaScript garbage collection calls this function directly. In the past
++    // we had problems where this was called on an object after a bad cast. The assertion below
++    // made our regression test detect the problem, so we should keep it because of that. But note
++    // that the value of the assertion relies on the compiler not being smart enough to know that
++    // isHTMLUnknownElement is guaranteed to return false for an HTMLMediaElement.
++    ASSERT(!isHTMLUnknownElement());
++
+     return m_paused;
+ }
+ 

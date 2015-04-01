@@ -1,0 +1,15 @@
+# Upstream patches
+do_not_use_jit_on_big_endian_machines.patch
+fix_cloop_on_big_endian_machines.patch
+fix_crash_when_a_network_request_is_aborted_while_forwarding_data.patch
+blacklist_libkpartsplugin.patch
+webpageicons_db_privacy.patch
+
+# debian patches
+reduce_memory_usage.patch
+05_sparc_unaligned_access.diff
+no_gc_sections.diff
+hurd.diff
+webkit_qt_hide_symbols.diff
+fix_nonlinux_glibc_linkage.diff
+check_html_unknown_elements.diff
