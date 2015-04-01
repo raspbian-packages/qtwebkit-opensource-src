@@ -1,0 +1,38 @@
+From 13ebee35e169a8b1210851ec494951815c70620c Mon Sep 17 00:00:00 2001
+From: Allan Sandfeld Jensen <allan.jensen@digia.com>
+Date: Mon, 13 Oct 2014 15:32:14 +0200
+Subject: [PATCH] Fix crash when a network-request is aborted while forwarding
+ data
+
+Since we forward data block-wise a network request may be aborted while
+we are still forwarding received data. In that case we should stop the
+forwarding.
+
+Task-number: QTBUG-41877
+Change-Id: Ia34bbdcacdc4eb70a2e814d3b4bada9844abbb83
+Reviewed-by: Michael Bruning <michael.bruning@digia.com>
+---
+ Source/WebCore/platform/network/qt/QNetworkReplyHandler.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/Source/WebCore/platform/network/qt/QNetworkReplyHandler.cpp b/Source/WebCore/platform/network/qt/QNetworkReplyHandler.cpp
+index 5990a40..fc69546 100644
+--- a/Source/WebCore/platform/network/qt/QNetworkReplyHandler.cpp
++++ b/Source/WebCore/platform/network/qt/QNetworkReplyHandler.cpp
+@@ -687,9 +687,12 @@ void QNetworkReplyHandler::forwardData()
+         // -1 means we do not provide any data about transfer size to inspector so it would use
+         // Content-Length headers or content size to show transfer size.
+         client->didReceiveData(m_resourceHandle, buffer, readSize, -1);
++        // Check if the request has been aborted or this reply-handler was otherwise released.
++        if (wasAborted() || !m_replyWrapper)
++            break;
+     }
+     delete[] buffer;
+-    if (bytesAvailable > 0)
++    if (bytesAvailable > 0 && m_replyWrapper)
+         m_queue.requeue(&QNetworkReplyHandler::forwardData);
+ }
+ 
+-- 
+2.1.1
+

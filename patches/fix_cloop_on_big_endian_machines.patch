@@ -1,0 +1,142 @@
+From 0c58a486f551e7e7b63d438e3d32f21f876327d1 Mon Sep 17 00:00:00 2001
+From: Allan Sandfeld Jensen <allan.jensen@digia.com>
+Date: Thu, 9 Oct 2014 17:40:37 +0200
+Subject: [PATCH] Fix CLoop on big-endian machines
+
+Callee and ScopeChain are JSObject pointers and saved in the 64bit
+structure for JS registers. On a 32bit big-endian machine the actual
+pointer is offset by the PayloadOffset of 4 bytes, but on little-endian
+and 64bit architectures there is no offset.
+
+This patch fixes four places the payloadOffset was not correctly added
+on 32bit big-endian, and six places it was added on 64big big-endian
+when it shouldn't.
+
+Task-number: QTBUG-41896
+Change-Id: I46b474bee9822b8040d1b7b2e8f31ce42e0adefe
+Reviewed-by: Jocelyn Turcotte <jocelyn.turcotte@digia.com>
+---
+ .../JavaScriptCore/llint/LowLevelInterpreter.asm   | 25 +++++++++++++---------
+ .../llint/LowLevelInterpreter32_64.asm             |  2 +-
+ 2 files changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/Source/JavaScriptCore/llint/LowLevelInterpreter.asm b/Source/JavaScriptCore/llint/LowLevelInterpreter.asm
+index 2b5a23c..c4d86ee 100644
+--- a/Source/JavaScriptCore/llint/LowLevelInterpreter.asm
++++ b/Source/JavaScriptCore/llint/LowLevelInterpreter.asm
+@@ -87,6 +87,12 @@ else
+     const PayloadOffset = 0
+ end
+ 
++if JSVALUE64
++    const JSCellPayloadOffset = 0
++else
++    const JSCellPayloadOffset = PayloadOffset
++end
++
+ # Constant for reasoning about butterflies.
+ const IsArray                  = 1
+ const IndexingShapeMask        = 30
+@@ -161,7 +167,6 @@ else
+     const VectorSizeOffset = 8
+ end
+ 
+-
+ # Some common utilities.
+ macro crash()
+     if C_LOOP
+@@ -267,13 +272,13 @@ macro assertNotConstant(index)
+ end
+ 
+ macro functionForCallCodeBlockGetter(targetRegister)
+-    loadp Callee[cfr], targetRegister
++    loadp Callee + JSCellPayloadOffset[cfr], targetRegister
+     loadp JSFunction::m_executable[targetRegister], targetRegister
+     loadp FunctionExecutable::m_codeBlockForCall[targetRegister], targetRegister
+ end
+ 
+ macro functionForConstructCodeBlockGetter(targetRegister)
+-    loadp Callee[cfr], targetRegister
++    loadp Callee + JSCellPayloadOffset[cfr], targetRegister
+     loadp JSFunction::m_executable[targetRegister], targetRegister
+     loadp FunctionExecutable::m_codeBlockForConstruct[targetRegister], targetRegister
+ end
+@@ -671,7 +676,7 @@ _llint_op_resolve_global_var:
+ macro resolveScopedVarBody(resolveOperations)
+     # First ResolveOperation is to skip scope chain nodes
+     getScope(macro(dest)
+-                 loadp ScopeChain + PayloadOffset[cfr], dest
++                 loadp ScopeChain + JSCellPayloadOffset[cfr], dest
+              end,
+              ResolveOperation::m_scopesToSkip[resolveOperations], t1, t2)
+     loadp JSVariableObject::m_registers[t1], t1 # t1 now contains the activation registers
+@@ -696,7 +701,7 @@ _llint_op_resolve_scoped_var_on_top_scope:
+     loadisFromInstruction(1, t3)
+ 
+     # We know we want the top scope chain entry
+-    loadp ScopeChain + PayloadOffset[cfr], t1
++    loadp ScopeChain + JSCellPayloadOffset[cfr], t1
+     loadp JSVariableObject::m_registers[t1], t1 # t1 now contains the activation registers
+     
+     # Second ResolveOperation tells us what offset to use
+@@ -718,7 +723,7 @@ _llint_op_resolve_scoped_var_with_top_scope_check:
+                      loadp JSScope::m_next[t1], dest
+                  jmp .done
+                  .scopeChainNotCreated:
+-                     loadp ScopeChain + PayloadOffset[cfr], dest
++                     loadp ScopeChain + JSCellPayloadOffset[cfr], dest
+                  .done:
+              end, 
+              # Second ResolveOperation tells us how many more nodes to skip
+@@ -773,7 +778,7 @@ _llint_op_resolve_base_to_scope:
+     getResolveOperation(4, t0)
+     # First ResolveOperation is to skip scope chain nodes
+     getScope(macro(dest)
+-                 loadp ScopeChain + PayloadOffset[cfr], dest
++                 loadp ScopeChain + JSCellPayloadOffset[cfr], dest
+              end,
+              ResolveOperation::m_scopesToSkip[t0], t1, t2)
+     loadisFromInstruction(1, t3)
+@@ -798,7 +803,7 @@ _llint_op_resolve_base_to_scope_with_top_scope_check:
+                      loadp JSScope::m_next[t1], dest
+                  jmp .done
+                  .scopeChainNotCreated:
+-                     loadp ScopeChain + PayloadOffset[cfr], dest
++                     loadp ScopeChain + JSCellPayloadOffset[cfr], dest
+                  .done:
+              end, 
+              # Second ResolveOperation tells us how many more nodes to skip
+@@ -823,7 +828,7 @@ macro interpretResolveWithBase(opcodeLength, slowPath)
+     getResolveOperation(4, t0)
+     btpz t0, .slowPath
+ 
+-    loadp ScopeChain[cfr], t3
++    loadp ScopeChain + JSCellPayloadOffset[cfr], t3
+     # Get the base
+     loadis ResolveOperation::m_operation[t0], t2
+ 
+@@ -845,7 +850,7 @@ macro interpretResolveWithBase(opcodeLength, slowPath)
+                          loadp JSScope::m_next[t1], dest
+                      jmp .done
+                      .scopeChainNotCreated:
+-                         loadp ScopeChain + PayloadOffset[cfr], dest
++                         loadp ScopeChain + JSCellPayloadOffset[cfr], dest
+                      .done:
+                  end,
+                  sizeof ResolveOperation + ResolveOperation::m_scopesToSkip[t0], t1, t2)
+diff --git a/Source/JavaScriptCore/llint/LowLevelInterpreter32_64.asm b/Source/JavaScriptCore/llint/LowLevelInterpreter32_64.asm
+index 89e40c7..87aa09e 100644
+--- a/Source/JavaScriptCore/llint/LowLevelInterpreter32_64.asm
++++ b/Source/JavaScriptCore/llint/LowLevelInterpreter32_64.asm
+@@ -1692,7 +1692,7 @@ _llint_op_next_pname:
+     loadi 20[PC], t2
+     loadi PayloadOffset[cfr, t2, 8], t2
+     loadp JSPropertyNameIterator::m_jsStrings[t2], t3
+-    loadi [t3, t0, 8], t3
++    loadi PayloadOffset[t3, t0, 8], t3
+     addi 1, t0
+     storei t0, PayloadOffset[cfr, t1, 8]
+     loadi 4[PC], t1
+-- 
+2.1.1
+

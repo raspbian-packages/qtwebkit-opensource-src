@@ -1,0 +1,41 @@
+From 0b6f959022700ecf9374bdbb13772242d3f7e617 Mon Sep 17 00:00:00 2001
+From: Allan Sandfeld Jensen <allan.jensen@digia.com>
+Date: Fri, 10 Oct 2014 14:50:18 +0200
+Subject: [PATCH] Do not use JIT on big endian architectures
+
+All the JIT implementations targets the little-endian versions of ARM,
+MIPS and SH4 respectively. So in case anyone builds on those platforms
+we should not enable JIT.
+
+Task-number: QTBUG-41896
+Change-Id: I5be167511e2c3eac6c63e603b82da84fb6b29eaa
+Reviewed-by: Julien Brianceau <jbriance@cisco.com>
+Reviewed-by: Michael Bruning <michael.bruning@digia.com>
+---
+ Source/WTF/wtf/Platform.h |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- a/Source/WTF/wtf/Platform.h
++++ b/Source/WTF/wtf/Platform.h
+@@ -128,6 +128,9 @@
+ /* CPU(SH4) - SuperH SH-4 */
+ #if defined(__SH4__)
+ #define WTF_CPU_SH4 1
++#ifdef __BIG_ENDIAN__
++#define WTF_CPU_BIG_ENDIAN 1
++#endif
+ #endif
+ 
+ /* CPU(SPARC32) - SPARC 32-bit */
+@@ -759,6 +762,11 @@
+ #define ENABLE_JIT 0
+ #endif
+ 
++/* All the current JIT implementations target little-endian */
++#if CPU(BIG_ENDIAN)
++#define ENABLE_JIT 0
++#endif
++
+ /* Disable JIT on x32 */
+ #if CPU(X32)
+ #define ENABLE_JIT 0
