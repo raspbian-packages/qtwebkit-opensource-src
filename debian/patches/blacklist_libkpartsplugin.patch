@@ -1,0 +1,30 @@
+From a322d1b1ba39bb83a2ffd41c4dc0c00de5bd77e0 Mon Sep 17 00:00:00 2001
+From: Sune Vuorela <sune@vuorela.dk>
+Date: Mon, 13 Oct 2014 20:39:26 +0200
+Subject: [PATCH] Blacklist libkpartsplugin
+
+KPartsPlugin is built using qt4, and loading that into a Qt5 QtWebkit
+makes stuff crash.
+
+Change-Id: I47d01dfe3b215192b012911013b352ea5b5b1530
+---
+ Source/WebCore/plugins/qt/PluginPackageQt.cpp | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Source/WebCore/plugins/qt/PluginPackageQt.cpp b/Source/WebCore/plugins/qt/PluginPackageQt.cpp
+index 679480b..a674ad3 100644
+--- a/Source/WebCore/plugins/qt/PluginPackageQt.cpp
++++ b/Source/WebCore/plugins/qt/PluginPackageQt.cpp
+@@ -146,7 +146,8 @@ bool PluginPackage::isPluginBlacklisted()
+ {
+     // TODO: enumerate all plugins that are incompatible with Qt5.
+     const QLatin1String pluginBlacklist[] = {
+-        QLatin1String("skypebuttons")
++        QLatin1String("skypebuttons"),
++        QLatin1String("libkpartsplugin")
+     };
+ 
+     QString baseName = QFileInfo(static_cast<QString>(m_path)).baseName();
+-- 
+2.1.1
+

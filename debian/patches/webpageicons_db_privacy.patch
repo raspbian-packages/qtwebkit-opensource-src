@@ -1,0 +1,47 @@
+From 2810aea1f6c9cca48b93130a7c245f9a2f85637e Mon Sep 17 00:00:00 2001
+From: Florian Bruhin <git@the-compiler.org>
+Date: Wed, 18 Mar 2015 18:47:19 +0100
+Subject: Fix URLs visited during private browsing showing up in
+ WebpageIcons.db.
+
+Ported from http://trac.webkit.org/changeset/181565 by beidson@apple.com.
+
+Upstream patch by Sam Weinig, reviewed by Brady Eidson.
+
+* loader/icon/IconController.cpp:
+
+(WebCore::IconController::startLoader): Bail early here if the page is using an ephemeral session.
+(WebCore::IconController::continueLoadWithDecision): Instead of here.
+
+Change-Id: I263bb6122606caa3488d641b127dd377012ee424
+Reviewed-by: Allan Sandfeld Jensen <allan.jensen@theqtcompany.com>
+---
+ Source/WebCore/loader/icon/IconController.cpp | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Source/WebCore/loader/icon/IconController.cpp b/Source/WebCore/loader/icon/IconController.cpp
+index 8f23f6d..a808352 100644
+--- a/Source/WebCore/loader/icon/IconController.cpp
++++ b/Source/WebCore/loader/icon/IconController.cpp
+@@ -159,6 +159,10 @@ void IconController::startLoader()
+     }
+ 
+     if (iconDatabase().supportsAsynchronousMode()) {
++        //  FIXME (<rdar://problem/9168605>) - We should support in-memory-only private browsing icons in asynchronous icon database mode.
++        if (iconDatabase().supportsAsynchronousMode() && m_frame->page()->settings()->privateBrowsingEnabled())
++            return;
++
+         m_frame->loader()->documentLoader()->getIconLoadDecisionForIconURL(urlString);
+         // Commit the icon url mapping to the database just in case we don't end up loading later.
+         commitToDatabase(iconURL);
+@@ -202,10 +206,6 @@ void IconController::continueLoadWithDecision(IconLoadDecision iconLoadDecision)
+ {
+     ASSERT(iconLoadDecision != IconLoadUnknown);
+ 
+-    //  FIXME (<rdar://problem/9168605>) - We should support in-memory-only private browsing icons in asynchronous icon database mode.
+-    if (iconDatabase().supportsAsynchronousMode() && m_frame->page()->settings()->privateBrowsingEnabled())
+-        return;
+-
+     if (iconLoadDecision == IconLoadNo) {
+         KURL iconURL(url());
+         String urlString(iconURL.string());
