@@ -1,0 +1,18 @@
+Description: fix pthread linking
+Origin: upstream, https://code.qt.io/cgit/qt/qtwebkit.git/commit/?id=5f359baacdf92fab
+Last-Update: 2016-03-06
+
+---
+ Tools/qmake/mkspecs/features/default_post.prf |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- a/Tools/qmake/mkspecs/features/default_post.prf
++++ b/Tools/qmake/mkspecs/features/default_post.prf
+@@ -230,6 +230,7 @@ for(subdir, SUBDIRS) {
+         #message(Removing invalid subtarget $${subdir} $${path})
+         #SUBDIRS -= $${subdir}
+     }
++    posix:!darwin: LIBS += -lpthread
+ }
+ 
+ root_project_file {
