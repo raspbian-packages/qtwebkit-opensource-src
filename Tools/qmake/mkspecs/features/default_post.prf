@@ -230,6 +230,7 @@ for(subdir, SUBDIRS) {
         #message(Removing invalid subtarget $${subdir} $${path})
         #SUBDIRS -= $${subdir}
     }
+    posix:!darwin: LIBS += -lpthread
 }
 
 root_project_file {
