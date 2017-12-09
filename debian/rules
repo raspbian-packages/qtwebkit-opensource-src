@@ -1,0 +1,77 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DEB_HOST_ARCH_CPU ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
+DEB_HOST_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+export DEB_CPPFLAGS_MAINT_APPEND = -DNDEBUG
+
+# The debug packages produced by webkit are huge and cause problems in
+# most buildds, so use -g1 in all architectures except the ones that
+# are known to work fine
+ifeq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64 ppc64el s390x))
+	export DEB_CXXFLAGS_MAINT_STRIP = -g
+	export DEB_CXXFLAGS_MAINT_APPEND = -g1
+endif
+
+# See https://github.com/annulen/webkit/issues/626
+ifneq (,$(filter $(DEB_HOST_ARCH_CPU),mips mipsel))
+	export DEB_CXXFLAGS_MAINT_APPEND = -mfp32
+endif
+
+# JIT is only supported on x86 / armhf / aarch64 / mips32
+ifeq (,$(filter $(DEB_HOST_ARCH_CPU),amd64 arm64 armhf i386 mips mipsel))
+	EXTRA_CMAKE_ARGUMENTS += -DENABLE_JIT=OFF
+endif
+
+# Copied from Fedora; see also https://github.com/annulen/webkit/issues/480
+ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))
+	EXTRA_CMAKE_ARGUMENTS += -DUSE_SYSTEM_MALLOC=ON
+endif
+
+%:
+	dh $@ --buildsystem=cmake --with pkgkde_symbolshelper
+
+override_dh_auto_configure:
+	dh_auto_configure -- -G Ninja -DPORT=Qt -DUSE_LD_GOLD=OFF $(EXTRA_CMAKE_ARGUMENTS)
+
+override_dh_auto_build-arch:
+	dh_auto_build --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja
+
+override_dh_auto_build-indep:
+	BUILDDIR=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE) \
+	dh_auto_build --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja -- docs
+
+override_dh_auto_install-arch:
+	dh_auto_install --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja
+
+	# Remove private headers
+	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKit/*/QtWebKit
+	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKitWidgets/*/QtWebKitWidgets
+
+override_dh_auto_install-indep:
+	install -d debian/tmp/usr/share/qt5/
+	cp -r obj-$(DEB_HOST_GNU_TYPE)/doc debian/tmp/usr/share/qt5/
+
+override_dh_missing:
+	dh_missing --fail-missing
+
+override_dh_auto_test-arch:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	-cd obj-$(DEB_HOST_GNU_TYPE); \
+	xvfb-run -a -s "-screen 0 1024x768x24 +extension RANDR +extension RENDER +extension GLX" \
+	ctest --output-on-failure
+endif
+
+override_dh_auto_test-indep:
+	# Do not attempt to run anything to make build-indep work
+
+override_dh_strip:
+	dh_strip --dbgsym-migration='libqt5webkit5-dbg (<< 5.212.0~alpha2-1~)'
+
+override_dh_auto_clean:
+	rm -f `find . -name '*.pyc'`
+	dh_auto_clean
