@@ -1,0 +1,18 @@
+Description: fix nullptr dereference in QWebPageAdapter::selectedHtml()
+Origin: Fedora, https://src.fedoraproject.org/cgit/rpms/qt5-qtwebkit.git/tree/qtwebkit-5.212.0-alpha2-fix-null-pointer-dereference.patch
+Last-Update: 2017-10-30
+
+--- a/Source/WebKit/qt/WebCoreSupport/QWebPageAdapter.cpp
++++ b/Source/WebKit/qt/WebCoreSupport/QWebPageAdapter.cpp
+@@ -390,7 +390,10 @@
+ 
+ QString QWebPageAdapter::selectedHtml() const
+ {
+-    return page->focusController().focusedOrMainFrame().editor().selectedRange()->toHTML();
++    RefPtr<Range> range = page->focusController().focusedOrMainFrame().editor().selectedRange();
++    if (!range)
++        return QString();
++    return range->toHTML();
+ }
+ 
+ bool QWebPageAdapter::isContentEditable() const
