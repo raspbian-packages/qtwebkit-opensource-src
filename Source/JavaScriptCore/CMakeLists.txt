@@ -1279,6 +1279,7 @@ endif ()
 
 if (WTF_CPU_ARM)
 elseif (WTF_CPU_ARM64)
+elseif (WTF_CPU_ALPHA)
 elseif (WTF_CPU_HPPA)
 elseif (WTF_CPU_PPC)
 elseif (WTF_CPU_PPC64)
