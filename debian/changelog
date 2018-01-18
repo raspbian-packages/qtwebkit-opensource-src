@@ -1,9 +1,29 @@
-qtwebkit-opensource-src (5.212.0~alpha2-5+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-6+rpi1) buster-staging; urgency=medium
 
+  [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
   * Fix clean target.
 
- -- Peter Michael Green <plugwash@raspbian.org>  Sat, 09 Dec 2017 00:03:30 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Thu, 18 Jan 2018 03:09:26 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-6) unstable; urgency=medium
+
+  [ Dmitry Shachnev ]
+  * Fix build on x32 architecture (closes: #881055):
+    - Make sure JIT is not enabled on x32.
+    - Backport upstream patch to use JSVALUE32_64 on x32.
+    - Use gold linker on x32, to avoid undefined reference error.
+  * Backport upstream changes to fix build on Alpha (closes: #880640).
+  * Backport upstream changes to add descriptions to pkg-config files
+    (closes: #884035).
+  * Bump Standards-Version to 4.1.3, no changes needed.
+
+  [ Pino Toscano ]
+  * Fix build on hurd-i386:
+    - workaround a PATH_MAX usage; patch path_max.diff
+    - update symbols file
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 09 Jan 2018 18:38:23 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-5) unstable; urgency=medium
 

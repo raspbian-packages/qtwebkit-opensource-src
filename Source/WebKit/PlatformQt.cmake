@@ -479,6 +479,7 @@ endif ()
 if (NOT MACOS_BUILD_FRAMEWORKS)
     ecm_generate_pkgconfig_file(
         BASE_NAME Qt5WebKit
+        DESCRIPTION "Qt WebKit module"
         DEPS "${WEBKIT_PKGCONGIG_DEPS}"
         FILENAME_VAR WebKit_PKGCONFIG_FILENAME
     )
@@ -669,6 +670,7 @@ install(
 if (NOT MACOS_BUILD_FRAMEWORKS)
     ecm_generate_pkgconfig_file(
         BASE_NAME Qt5WebKitWidgets
+        DESCRIPTION "Qt WebKitWidgets module"
         DEPS "${WEBKITWIDGETS_PKGCONFIG_DEPS}"
         FILENAME_VAR WebKitWidgets_PKGCONFIG_FILENAME
     )
