@@ -103,11 +103,11 @@ def armMoveImmediate(value, register)
         $asm.puts "mov #{register.armOperand}, \##{value}"
     elsif (~value) >= 0 && (~value) < 256
         $asm.puts "mvn #{register.armOperand}, \##{~value}"
-    elsif isARMv7 or isARMv7Traditional
-        $asm.puts "movw #{register.armOperand}, \##{value & 0xffff}"
-        if (value & 0xffff0000) != 0
-            $asm.puts "movt #{register.armOperand}, \##{(value >> 16) & 0xffff}"
-        end
+    #elsif isARMv7 or isARMv7Traditional
+    #    $asm.puts "movw #{register.armOperand}, \##{value & 0xffff}"
+    #    if (value & 0xffff0000) != 0
+    #        $asm.puts "movt #{register.armOperand}, \##{(value >> 16) & 0xffff}"
+    #    end
     else
         $asm.puts "ldr #{register.armOperand}, =#{value}"
     end
@@ -502,8 +502,9 @@ class Instruction
                 $asm.puts "mov #{armFlippedOperands(operands)}"
             end
         when "mvlbl"
-                $asm.puts "movw #{operands[1].armOperand}, \#:lower16:#{operands[0].value}"
-                $asm.puts "movt #{operands[1].armOperand}, \#:upper16:#{operands[0].value}"
+                raise "cant use this on armv6, #{codeorigin}"
+                #$asm.puts "movw #{operands[1].armOperand}, \#:lower16:#{operands[0].value}"
+                #$asm.puts "movt #{operands[1].armOperand}, \#:upper16:#{operands[0].value}"
         when "nop"
             $asm.puts "nop"
         when "bieq", "bpeq", "bbeq"
