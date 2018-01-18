@@ -1,0 +1,20 @@
+From: Peter Michael Green <plugwash@raspbian.org>
+Date: Thu, 18 Jan 2018 06:17:41 +0000
+X-Dgit-Generated: 5.212.0~alpha2-6+rpi1 849b2363e4c2b0597f3dd895bee26228e1996c9e
+Subject: Make further unsuccesful changes to offlineasm
+
+Disable JIT.
+
+---
+
+--- qtwebkit-opensource-src-5.212.0~alpha2.orig/Source/JavaScriptCore/offlineasm/arm.rb
++++ qtwebkit-opensource-src-5.212.0~alpha2/Source/JavaScriptCore/offlineasm/arm.rb
+@@ -502,7 +502,7 @@ class Instruction
+                 $asm.puts "mov #{armFlippedOperands(operands)}"
+             end
+         when "mvlbl"
+-                raise "cant use this on armv6, #{codeorigin}"
++                $asm.puts "ldr #{operands[1].armOperand}, \=:#{operands[0].value}"
+                 #$asm.puts "movw #{operands[1].armOperand}, \#:lower16:#{operands[0].value}"
+                 #$asm.puts "movt #{operands[1].armOperand}, \#:upper16:#{operands[0].value}"
+         when "nop"
