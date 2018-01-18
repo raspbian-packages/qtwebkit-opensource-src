@@ -4,7 +4,8 @@ qtwebkit-opensource-src (5.212.0~alpha2-6+rpi1) buster-staging; urgency=medium
   * Update symbols file for raspbian.
   * Fix clean target.
   [changes introduced in 5.212.0~alpha2-6+rpi1] by Peter Michael Green
-  * hack offlineasm to prevent generation of movw/movt
+  * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
+  * Disable JIT
 
  -- Peter Michael Green <plugwash@raspbian.org>  Thu, 18 Jan 2018 03:09:26 +0000
 

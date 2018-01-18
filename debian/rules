@@ -26,9 +26,9 @@ ifneq ($(DEB_HOST_ARCH),x32)
 endif
 
 # JIT is only supported on x86 / armhf / aarch64 / mips32
-ifeq (,$(filter $(DEB_HOST_ARCH),amd64 arm64 armhf hurd-i386 i386 kfreebsd-amd64 kfreebsd-i386 mips mipsel))
+#ifeq (,$(filter $(DEB_HOST_ARCH),amd64 arm64 armhf hurd-i386 i386 kfreebsd-amd64 kfreebsd-i386 mips mipsel))
 	EXTRA_CMAKE_ARGUMENTS += -DENABLE_JIT=OFF
-endif
+#endif
 
 # Copied from Fedora; see also https://github.com/annulen/webkit/issues/480
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))

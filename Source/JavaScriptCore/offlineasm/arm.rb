@@ -502,7 +502,7 @@ class Instruction
                 $asm.puts "mov #{armFlippedOperands(operands)}"
             end
         when "mvlbl"
-                raise "cant use this on armv6, #{codeorigin}"
+                $asm.puts "ldr #{operands[1].armOperand}, \=:#{operands[0].value}"
                 #$asm.puts "movw #{operands[1].armOperand}, \#:lower16:#{operands[0].value}"
                 #$asm.puts "movt #{operands[1].armOperand}, \#:upper16:#{operands[0].value}"
         when "nop"
