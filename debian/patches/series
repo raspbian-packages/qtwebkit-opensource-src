@@ -1,0 +1,9 @@
+reduce_exports.diff
+detect_opengl_es2.diff
+atomic_config_test.diff
+fix_copyChars_segfault.diff
+fix_selectedHtml_segfault.diff
+fix_ftbfs_x32.diff
+path_max.diff
+fix_ftbfs_alpha.diff
+pkgconfig_description.diff
