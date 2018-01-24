@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-6+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-7+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,15 @@ qtwebkit-opensource-src (5.212.0~alpha2-6+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Peter Michael Green <plugwash@raspbian.org>  Thu, 18 Jan 2018 03:09:26 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Wed, 24 Jan 2018 08:28:18 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-7) unstable; urgency=medium
+
+  * Build with -O1 instead of -O2 on sh3/sh4 (closes: #887462).
+  * Update symbols files with buildds’ and sh4 logs (closes: #887463).
+  * Fix the rules syntax to make sure we build with -g1 on mips/mipsel.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 18 Jan 2018 11:33:51 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-6) unstable; urgency=medium
 

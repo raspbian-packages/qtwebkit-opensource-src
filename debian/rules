@@ -17,7 +17,13 @@ endif
 
 # See https://github.com/annulen/webkit/issues/626
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),mips mipsel))
-	export DEB_CXXFLAGS_MAINT_APPEND = -mfp32
+	export DEB_CXXFLAGS_MAINT_APPEND += -mfp32
+endif
+
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81426
+ifneq (,$(filter $(DEB_HOST_ARCH_CPU),sh3 sh4))
+	export DEB_CXXFLAGS_MAINT_STRIP += -O2
+	export DEB_CXXFLAGS_MAINT_APPEND += -O1
 endif
 
 # Disable gold linker on all architectures except x32
