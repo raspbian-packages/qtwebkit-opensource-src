@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-7+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-9+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,24 @@ qtwebkit-opensource-src (5.212.0~alpha2-7+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Wed, 24 Jan 2018 08:28:18 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Tue, 17 Apr 2018 03:45:32 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-9) unstable; urgency=medium
+
+  * Release to unstable.
+
+ -- Lisandro Damián Nicanor Pérez Meyer <lisandro@debian.org>  Sat, 07 Apr 2018 17:23:09 -0300
+
+qtwebkit-opensource-src (5.212.0~alpha2-8) experimental; urgency=medium
+
+  * Build with system WOFF2 library, add a patch for that.
+  * Build against Qt 5.10.1 in experimental.
+  * Add support for the nodoc build profile.
+  * Update Vcs fields for migration to salsa.debian.org.
+  * Add a patch to fix include path in pkg-config files (closes: #890413).
+  * Update debian/libqt5webkit5.symbols from the current build log.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sat, 24 Feb 2018 15:21:11 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-7) unstable; urgency=medium
 

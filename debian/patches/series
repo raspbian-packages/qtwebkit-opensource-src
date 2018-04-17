@@ -7,5 +7,7 @@ fix_ftbfs_x32.diff
 path_max.diff
 fix_ftbfs_alpha.diff
 pkgconfig_description.diff
+use_system_woff2.diff
+pkgconfig_includedir.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch
