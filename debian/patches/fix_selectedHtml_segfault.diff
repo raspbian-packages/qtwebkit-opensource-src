@@ -1,0 +1,18 @@
+Description: fix crash in QWebPage::selectedHtml() when selectedRange is nullptr
+Origin: upstream, https://github.com/annulen/webkit/commit/0e75f3272d149bc6
+Last-Update: 2017-10-30
+
+--- a/Source/WebKit/qt/WebCoreSupport/QWebPageAdapter.cpp
++++ b/Source/WebKit/qt/WebCoreSupport/QWebPageAdapter.cpp
+@@ -390,7 +390,10 @@
+ 
+ QString QWebPageAdapter::selectedHtml() const
+ {
+-    return page->focusController().focusedOrMainFrame().editor().selectedRange()->toHTML();
++    RefPtr<Range> range = page->focusController().focusedOrMainFrame().editor().selectedRange();
++    if (!range)
++        return QString();
++    return range->toHTML();
+ }
+ 
+ bool QWebPageAdapter::isContentEditable() const
