@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-9+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-15+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,49 @@ qtwebkit-opensource-src (5.212.0~alpha2-9+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Tue, 17 Apr 2018 03:45:32 +0000
+ -- Peter Michael Green <plugwash@raspbian.org>  Fri, 17 Aug 2018 00:17:15 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-15) unstable; urgency=medium
+
+  * Build with -fpermissive to (hopefully) solve the i386 FTBFS.
+  * Update symbols from build logs.
+
+ -- Simon Quigley <tsimonq2@ubuntu.com>  Thu, 26 Jul 2018 19:14:49 -0500
+
+qtwebkit-opensource-src (5.212.0~alpha2-14) unstable; urgency=medium
+
+  * Update symbols files with buildds' logs.
+
+ -- Lisandro Damián Nicanor Pérez Meyer <lisandro@debian.org>  Wed, 25 Jul 2018 23:33:17 -0300
+
+qtwebkit-opensource-src (5.212.0~alpha2-13) unstable; urgency=medium
+
+  * Upload to Sid.
+
+ -- Simon Quigley <tsimonq2@ubuntu.com>  Wed, 25 Jul 2018 04:49:30 -0500
+
+qtwebkit-opensource-src (5.212.0~alpha2-12) experimental; urgency=medium
+
+  * Remove the dbgsym migration section of debian/rules; it isn't needed
+    anymore.
+
+ -- Simon Quigley <tsimonq2@ubuntu.com>  Sat, 23 Jun 2018 20:30:20 -0500
+
+qtwebkit-opensource-src (5.212.0~alpha2-11) experimental; urgency=medium
+
+  * Bump build dependencies to 5.11.1.
+
+ -- Simon Quigley <tsimonq2@ubuntu.com>  Tue, 19 Jun 2018 20:20:58 -0500
+
+qtwebkit-opensource-src (5.212.0~alpha2-10) experimental; urgency=medium
+
+  * Add my name to Uploaders.
+  * Bump build dependencies to 5.11.0.
+  * Fix insecure-copyright-format-uri.
+  * Bump Standards-version to 4.1.4, no changes needed.
+  * Bump debhelper compat to 11, no changes needed.
+
+ -- Simon Quigley <tsimonq2@ubuntu.com>  Mon, 18 Jun 2018 23:26:42 -0400
 
 qtwebkit-opensource-src (5.212.0~alpha2-9) unstable; urgency=medium
 

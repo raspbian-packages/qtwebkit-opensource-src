@@ -41,6 +41,8 @@ ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))
 	EXTRA_CMAKE_ARGUMENTS += -DUSE_SYSTEM_MALLOC=ON
 endif
 
+DEB_CXXFLAGS_MAINT_APPEND += -fpermissive
+
 %:
 	dh $@ --buildsystem=cmake --with pkgkde_symbolshelper
 
@@ -77,9 +79,6 @@ endif
 
 override_dh_auto_test-indep:
 	# Do not attempt to run anything to make build-indep work
-
-override_dh_strip:
-	dh_strip --dbgsym-migration='libqt5webkit5-dbg (<< 5.212.0~alpha2-1~)'
 
 override_dh_auto_clean:
 	rm -f `find . -name '*.pyc'`
