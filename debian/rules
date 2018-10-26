@@ -26,6 +26,9 @@ ifneq (,$(filter $(DEB_HOST_ARCH_CPU),sh3 sh4))
 	export DEB_CXXFLAGS_MAINT_APPEND += -O1
 endif
 
+# WebKit uses memset/memcpy a lot
+export DEB_CXXFLAGS_MAINT_APPEND += -Wno-class-memaccess
+
 # Disable gold linker on all architectures except x32
 ifneq ($(DEB_HOST_ARCH),x32)
 	EXTRA_CMAKE_ARGUMENTS += -DUSE_LD_GOLD=OFF

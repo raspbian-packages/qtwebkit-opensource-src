@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-15+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-17+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,24 @@ qtwebkit-opensource-src (5.212.0~alpha2-15+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Peter Michael Green <plugwash@raspbian.org>  Fri, 17 Aug 2018 00:17:15 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Fri, 26 Oct 2018 01:17:02 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-17) unstable; urgency=medium
+
+  * Update symbols files from buildds’ logs.
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 16 Oct 2018 17:48:46 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha2-16) experimental; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+  * Build with -Wno-class-memaccess to avoid tons of warnings about
+    memset/memcpy.
+  * Bump Qt build-dependencies to 5.11.2.
+  * Bump Standards-Version to 4.2.1, no changes needed.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 24 Sep 2018 21:24:52 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-15) unstable; urgency=medium
 
