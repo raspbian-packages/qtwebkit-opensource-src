@@ -2390,7 +2390,7 @@ libQt5WebKit.so.5 libqt5webkit5 #MINVER#
  _ZTV25QWebNotificationPresenter@Base 5.212.0~alpha2
  (arch=alpha amd64 arm64 armel armhf hppa hurd-i386 i386 kfreebsd-amd64 kfreebsd-i386 mips mips64el mipsel powerpc powerpcspe ppc64 sh4 x32)_ZTVNSt6thread11_State_implINS_8_InvokerISt5tupleIJPFvPN7bmalloc9AsyncTaskINS3_4HeapEMS5_FvvEEEES9_EEEEEE@Base 5.212.0~alpha2
  (arch=armel)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIS0_ELN9__gnu_cxx12_Lock_policyE1EE@Base 5.212.0~alpha2
- (arch=amd64 arm64 armhf hppa hurd-i386 i386 mips mips64el mipsel powerpc ppc64 sh4)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIS0_ELN9__gnu_cxx12_Lock_policyE2EE@Base 5.212.0~alpha2
+ (optional=disappeardinraspbian)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIS0_ELN9__gnu_cxx12_Lock_policyE2EE@Base 5.212.0~alpha2
  (arch=amd64 arm64 armel armhf hppa hurd-i386 i386 mips mips64el mipsel powerpc ppc64 sh4)_ZZNSt19_Sp_make_shared_tag5_S_tiEvE5__tag@Base 5.212.0~alpha2
  (optional=appeardinraspbian)_ZTVSt19_Sp_counted_deleterIPSt5mutexNSt12__shared_ptrIS0_LN9__gnu_cxx12_Lock_policyE1EE8_DeleterISaIS0_EEES7_LS4_1EE@Base 5.212.0~alpha2
  (optional=disappeardinraspbian)_ZTVSt19_Sp_counted_deleterIPSt5mutexNSt12__shared_ptrIS0_LN9__gnu_cxx12_Lock_policyE2EE8_DeleterISaIS0_EEES7_LS4_2EE@Base 5.212.0~alpha2

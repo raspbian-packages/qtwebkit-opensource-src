@@ -7,7 +7,7 @@ qtwebkit-opensource-src (5.212.0~alpha2-17+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 26 Oct 2018 01:17:02 +0000
+ -- Peter Michael Green <plugwash@raspbian.org>  Fri, 26 Oct 2018 01:17:02 +0000
 
 qtwebkit-opensource-src (5.212.0~alpha2-17) unstable; urgency=medium
 
