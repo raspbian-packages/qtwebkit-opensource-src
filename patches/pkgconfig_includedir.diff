@@ -1,0 +1,23 @@
+Description: fix include dir in generated pkg-config files
+Author: Dmitry Shachnev <mitya57@debian.org>
+Forwarded: https://github.com/annulen/webkit/pull/735
+Last-Update: 2018-02-24
+
+--- a/Source/WebKit/PlatformQt.cmake
++++ b/Source/WebKit/PlatformQt.cmake
+@@ -480,6 +480,7 @@
+     ecm_generate_pkgconfig_file(
+         BASE_NAME Qt5WebKit
+         DESCRIPTION "Qt WebKit module"
++        INCLUDE_INSTALL_DIR "${KDE_INSTALL_INCLUDEDIR}/QtWebKit"
+         DEPS "${WEBKIT_PKGCONGIG_DEPS}"
+         FILENAME_VAR WebKit_PKGCONFIG_FILENAME
+     )
+@@ -671,6 +672,7 @@
+     ecm_generate_pkgconfig_file(
+         BASE_NAME Qt5WebKitWidgets
+         DESCRIPTION "Qt WebKitWidgets module"
++        INCLUDE_INSTALL_DIR "${KDE_INSTALL_INCLUDEDIR}/QtWebKitWidgets"
+         DEPS "${WEBKITWIDGETS_PKGCONFIG_DEPS}"
+         FILENAME_VAR WebKitWidgets_PKGCONFIG_FILENAME
+     )
