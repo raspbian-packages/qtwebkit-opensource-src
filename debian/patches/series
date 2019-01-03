@@ -9,5 +9,6 @@ fix_ftbfs_alpha.diff
 pkgconfig_description.diff
 use_system_woff2.diff
 pkgconfig_includedir.diff
+doxygen_tags.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch

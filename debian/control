@@ -4,7 +4,7 @@ Maintainer: Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
 Uploaders: Timo Jyrinki <timo@debian.org>,
            Lisandro Damián Nicanor Pérez Meyer <lisandro@debian.org>,
            Dmitry Shachnev <mitya57@debian.org>,
-           Simon Quigley <tsimonq2@ubuntu.com>
+           Simon Quigley <tsimonq2@debian.org>
 Build-Depends: bison,
                cmake (>= 2.8.12),
                debhelper (>= 11),
@@ -21,9 +21,9 @@ Build-Depends: bison,
                libicu-dev,
                libjpeg-dev,
                libpng-dev,
-               libqt5opengl5-dev (>= 5.11.2+dfsg~),
-               libqt5sensors5-dev (>= 5.11.2~),
-               libqt5webchannel5-dev (>= 5.11.2~),
+               libqt5opengl5-dev (>= 5.11.3+dfsg~),
+               libqt5sensors5-dev (>= 5.11.3~),
+               libqt5webchannel5-dev (>= 5.11.3~),
                libsqlite3-dev,
                libwebp-dev,
                libwoff-dev,
@@ -35,17 +35,17 @@ Build-Depends: bison,
                ninja-build,
                pkg-config,
                pkg-kde-tools (>= 0.6.4),
-               python-minimal,
-               python2.7,
-               qtbase5-private-dev (>= 5.11.2+dfsg~),
-               qtdeclarative5-private-dev (>= 5.11.2~),
-               qtpositioning5-dev (>= 5.11.2+dfsg~),
-               ruby,
+               python-minimal:native,
+               python2.7:native,
+               qtbase5-private-dev (>= 5.11.3+dfsg~),
+               qtdeclarative5-private-dev (>= 5.11.3~),
+               qtpositioning5-dev (>= 5.11.3+dfsg~),
+               ruby:native,
                xauth <!nocheck>,
                xvfb <!nocheck>
-Build-Depends-Indep: qtbase5-doc-html (>= 5.11.2+dfsg~) <!nodoc>,
-                     qttools5-dev-tools (>= 5.11.2~) <!nodoc>
-Standards-Version: 4.2.1
+Build-Depends-Indep: qtbase5-doc-html (>= 5.11.3+dfsg~) <!nodoc>,
+                     qttools5-dev-tools (>= 5.11.3~) <!nodoc>
+Standards-Version: 4.3.0
 Section: libs
 Homepage: https://github.com/annulen/webkit
 Vcs-Git: https://salsa.debian.org/qt-kde-team/qt/qt5webkit.git
