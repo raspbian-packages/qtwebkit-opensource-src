@@ -1,0 +1,12 @@
+Description: enable doxygen tags file generation
+Origin: upstream, https://github.com/annulen/webkit/commit/efa87bd9862e5c7b
+Last-Update: 2018-11-02
+
+--- a/Source/qtwebkit.qdocconf
++++ b/Source/qtwebkit.qdocconf
+@@ -35,3 +35,5 @@
+ imagedirs = WebKit/qt/docs
+ 
+ depends += qtcore qtwidgets qtgui qtscript qtdoc qtprintsupport qtxml qtwebkitexamples qtquickcontrols
++
++tagfile = qtwebkit.tags
