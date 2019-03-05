@@ -47,41 +47,33 @@ endif
 DEB_CXXFLAGS_MAINT_APPEND += -fpermissive
 
 %:
-	dh $@ --buildsystem=cmake --with pkgkde_symbolshelper
+	dh $@ --buildsystem=cmake+ninja --with pkgkde_symbolshelper
 
 override_dh_auto_configure:
-	dh_auto_configure -- -G Ninja -DPORT=Qt $(EXTRA_CMAKE_ARGUMENTS)
+	dh_auto_configure -- -DPORT=Qt $(EXTRA_CMAKE_ARGUMENTS)
 
-override_dh_auto_build-arch:
-	dh_auto_build --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja
+override_dh_auto_build:
+	# Fix QTBUG-71134 (libpng warning: iCCP: known incorrect sRGB profile)
+	pngcrush -ow -fix ./Source/WebCore/Resources/nullPlugin@2x.png
+	pngcrush -ow -fix ./Source/WebCore/Resources/textAreaResizeCorner@2x.png
+	dh_auto_build
 
-override_dh_auto_build-indep:
-	BUILDDIR=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE) \
-	dh_auto_build --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja -- docs
-
-override_dh_auto_install-arch:
-	dh_auto_install --builddirectory=obj-$(DEB_HOST_GNU_TYPE) -O--buildsystem=ninja
+override_dh_auto_install:
+	dh_auto_install
 
 	# Remove private headers
 	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKit/*/QtWebKit
 	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKitWidgets/*/QtWebKitWidgets
 
-override_dh_auto_install-indep:
-	install -d debian/tmp/usr/share/qt5/
-	cp -r obj-$(DEB_HOST_GNU_TYPE)/doc debian/tmp/usr/share/qt5/
-
 override_dh_missing:
 	dh_missing --fail-missing
 
-override_dh_auto_test-arch:
+override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	-cd obj-$(DEB_HOST_GNU_TYPE); \
 	xvfb-run -a -s "-screen 0 1024x768x24 +extension RANDR +extension RENDER +extension GLX" \
 	ctest --output-on-failure
 endif
-
-override_dh_auto_test-indep:
-	# Do not attempt to run anything to make build-indep work
 
 override_dh_auto_clean:
 	rm -f `find . -name '*.pyc'`

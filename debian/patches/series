@@ -10,5 +10,6 @@ pkgconfig_description.diff
 use_system_woff2.diff
 pkgconfig_includedir.diff
 doxygen_tags.diff
+fix_trojita_plaintext.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch

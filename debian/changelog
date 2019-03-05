@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-19+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-20+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,20 @@ qtwebkit-opensource-src (5.212.0~alpha2-19+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Thu, 03 Jan 2019 10:30:08 +0000
+ -- Peter Michael Green <plugwash@raspbian.org>  Tue, 05 Mar 2019 17:51:07 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-20) unstable; urgency=medium
+
+  * Backport two upstream commits to fix page width in plain text messages
+    in Trojitá (fix_trojita_plaintext.diff; closes: #919522).
+  * Update to debhelper compat level 12.
+  * Use the new cmake+ninja buildsystem.
+  * Drop the documentation packages. They cannot be built properly with
+    qdoc 5.11. See https://github.com/annulen/webkit/issues/793.
+  * Update symbols files from buildds’ logs.
+  * Fix libpng warning by running pngcrush during build.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 19 Feb 2019 23:25:35 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-19) unstable; urgency=medium
 

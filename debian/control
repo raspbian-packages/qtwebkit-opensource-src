@@ -7,7 +7,7 @@ Uploaders: Timo Jyrinki <timo@debian.org>,
            Simon Quigley <tsimonq2@debian.org>
 Build-Depends: bison,
                cmake (>= 2.8.12),
-               debhelper (>= 11),
+               debhelper (>= 12),
                flex,
                gperf,
                libfontconfig1-dev,
@@ -35,6 +35,7 @@ Build-Depends: bison,
                ninja-build,
                pkg-config,
                pkg-kde-tools (>= 0.6.4),
+               pngcrush,
                python-minimal:native,
                python2.7:native,
                qtbase5-private-dev (>= 5.11.3+dfsg~),
@@ -43,8 +44,6 @@ Build-Depends: bison,
                ruby:native,
                xauth <!nocheck>,
                xvfb <!nocheck>
-Build-Depends-Indep: qtbase5-doc-html (>= 5.11.3+dfsg~) <!nodoc>,
-                     qttools5-dev-tools (>= 5.11.3~) <!nodoc>
 Standards-Version: 4.3.0
 Section: libs
 Homepage: https://github.com/annulen/webkit
@@ -88,26 +87,3 @@ Description: Qt WebKit QML module
  from the World Wide Web into your Qt application.
  .
  This package contains the WebKit QML module for QtDeclarative.
-
-Package: qtwebkit5-doc
-Build-Profiles: <!nodoc>
-Architecture: all
-Section: doc
-Depends: ${misc:Depends}
-Description: Qt 5 webkit documentation
- Qt is a cross-platform C++ application framework. Qt's primary feature
- is its rich set of widgets that provide standard GUI functionality.
- .
- This package contains the documentation for the Qt 5 webkit libraries.
-
-Package: qtwebkit5-doc-html
-Build-Profiles: <!nodoc>
-Architecture: all
-Section: doc
-Depends: ${misc:Depends}
-Description: Qt 5 webkit HTML documentation
- Qt is a cross-platform C++ application framework. Qt's primary feature
- is its rich set of widgets that provide standard GUI functionality.
- .
- This package contains the HTML documentation for the Qt 5 webkit
- libraries.
