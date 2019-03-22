@@ -1,0 +1,16 @@
+Description: add attribute fastcall to derived class member JSImageConstructor::construct
+Author: Bernhard Übelacker <bernhardu@mailbox.org>
+Forwarded: https://github.com/annulen/webkit/pull/803
+Last-Update: 2019-03-22
+
+--- a/Source/WebCore/bindings/js/JSImageConstructor.cpp
++++ b/Source/WebCore/bindings/js/JSImageConstructor.cpp
+@@ -44,7 +44,7 @@ template<> JSValue JSImageConstructor::p
+     return JSHTMLElement::getConstructor(vm, &globalObject);
+ }
+ 
+-template<> EncodedJSValue JSImageConstructor::construct(ExecState* state)
++template<> EncodedJSValue JSC_HOST_CALL JSImageConstructor::construct(ExecState* state)
+ {
+     JSImageConstructor* jsConstructor = jsCast<JSImageConstructor*>(state->callee());
+     Document* document = jsConstructor->document();

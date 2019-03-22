@@ -1,0 +1,139 @@
+Description: use system WOFF2 library
+Author: Dmitry Shachnev <mitya57@debian.org>
+Forwarded: https://github.com/annulen/webkit/pull/725
+Last-Update: 2018-02-24
+
+--- a/Source/CMakeLists.txt
++++ b/Source/CMakeLists.txt
+@@ -19,7 +19,7 @@
+     add_subdirectory(ThirdParty/gtest)
+ endif ()
+ 
+-if (USE_WOFF2)
++if (USE_WOFF2 AND NOT WOFF2DEC_FOUND)
+     add_subdirectory(ThirdParty/brotli)
+     add_subdirectory(ThirdParty/woff2)
+ endif ()
+--- a/Source/WebCore/CMakeLists.txt
++++ b/Source/WebCore/CMakeLists.txt
+@@ -3353,8 +3353,13 @@
+ endif ()
+ 
+ if (USE_WOFF2)
+-  list(APPEND WebCore_INCLUDE_DIRECTORIES "${THIRDPARTY_DIR}/woff2/src")
+-  list(APPEND WebCore_LIBRARIES woff2)
++    if (WOFF2DEC_FOUND)
++        list(APPEND WebCore_INCLUDE_DIRECTORIES "${WOFF2DEC_INCLUDE_DIRS}")
++        list(APPEND WebCore_LIBRARIES "${WOFF2DEC_LIBRARIES}")
++    else ()
++        list(APPEND WebCore_INCLUDE_DIRECTORIES "${THIRDPARTY_DIR}/woff2/src")
++        list(APPEND WebCore_LIBRARIES woff2)
++    endif ()
+ endif ()
+ 
+ set(WebCoreTestSupport_INCLUDE_DIRECTORIES
+--- /dev/null
++++ b/Source/cmake/FindWOFF2Dec.cmake
+@@ -0,0 +1,53 @@
++# - Try to find WOFF2Dec.
++# Once done, this will define
++#
++#  WOFF2DEC_FOUND - system has WOFF2Dec.
++#  WOFF2DEC_INCLUDE_DIRS - the WOFF2Dec include directories
++#  WOFF2DEC_LIBRARIES - link these to use WOFF2Dec.
++#
++# Copyright (C) 2017 Igalia S.L.
++#
++# Redistribution and use in source and binary forms, with or without
++# modification, are permitted provided that the following conditions
++# are met:
++# 1.  Redistributions of source code must retain the above copyright
++#     notice, this list of conditions and the following disclaimer.
++# 2.  Redistributions in binary form must reproduce the above copyright
++#     notice, this list of conditions and the following disclaimer in the
++#     documentation and/or other materials provided with the distribution.
++#
++# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND ITS CONTRIBUTORS ``AS
++# IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
++# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
++# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ITS
++# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
++# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
++# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
++# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
++# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
++# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
++# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++
++find_package(PkgConfig)
++pkg_check_modules(PC_WOFF2DEC libwoff2dec)
++
++find_path(WOFF2DEC_INCLUDE_DIRS
++    NAMES woff2/decode.h
++    HINTS ${PC_WOFF2DEC_INCLUDEDIR}
++)
++
++find_library(WOFF2DEC_LIBRARIES
++    NAMES woff2dec
++    HINTS ${PC_WOFF2DEC_LIBDIR}
++)
++
++include(FindPackageHandleStandardArgs)
++find_package_handle_standard_args(WOFF2Dec
++    REQUIRED_VARS WOFF2DEC_INCLUDE_DIRS WOFF2DEC_LIBRARIES
++    FOUND_VAR WOFF2DEC_FOUND
++    VERSION_VAR PC_WOFF2DEC_VERSION)
++
++mark_as_advanced(
++    WOFF2DEC_INCLUDE_DIRS
++    WOFF2DEC_LIBRARIES
++)
+--- a/Source/cmake/OptionsQt.cmake
++++ b/Source/cmake/OptionsQt.cmake
+@@ -679,6 +679,15 @@
+     endif ()
+ endif ()
+ 
++if (USE_WOFF2)
++    find_package(WOFF2Dec 1.0.1)
++    if (WOFF2DEC_FOUND)
++        message(STATUS "Using system WOFF2Dec library.")
++    else ()
++        message(STATUS "WOFF2Dec not found, using the bundled library.")
++    endif ()
++endif ()
++
+ # From OptionsGTK.cmake
+ if (CMAKE_MAJOR_VERSION LESS 3)
+     # Before CMake 3 it was necessary to use a build script instead of using cmake --build directly
+--- a/Source/WebCore/platform/graphics/WOFFFileFormat.cpp
++++ b/Source/WebCore/platform/graphics/WOFFFileFormat.cpp
+@@ -31,8 +31,8 @@
+ #include <wtf/ByteOrder.h>
+ 
+ #if USE(WOFF2)
+-#include "woff2_common.h"
+-#include "woff2_dec.h"
++#include <woff2/decode.h>
++static const uint32_t kWoff2Signature = 0x774f4632; // "wOF2"
+ #endif
+ 
+ namespace WebCore {
+@@ -84,7 +84,7 @@
+         return false;
+ 
+ #if USE(WOFF2)
+-    return signature == woffSignature || signature == woff2::kWoff2Signature;
++    return signature == woffSignature || signature == kWoff2Signature;
+ #else
+     return signature == woffSignature;
+ #endif
+@@ -140,7 +140,7 @@
+     }
+ 
+ #if USE(WOFF2)
+-    if (signature == woff2::kWoff2Signature) {
++    if (signature == kWoff2Signature) {
+         const uint8_t* woffData = reinterpret_cast_ptr<const uint8_t*>(woff.data());
+         const size_t woffSize = woff.size();
+         const size_t sfntSize = woff2::ComputeWOFF2FinalSize(woffData, woffSize);
