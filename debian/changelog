@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-20+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha2-21+rpi1) buster-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,17 @@ qtwebkit-opensource-src (5.212.0~alpha2-20+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Peter Michael Green <plugwash@raspbian.org>  Tue, 05 Mar 2019 17:51:07 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Tue, 02 Apr 2019 19:29:55 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha2-21) unstable; urgency=medium
+
+  * Add fastcall attribute to JSImageConstructor::construct method.
+    This fixes crash on i386 (closes: #909366, #924402). Thanks Bernhard
+    Übelacker for the patch!
+  * Remove -fpermissive from build flags. It was wrong and not needed
+    with the applied patch.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 22 Mar 2019 11:42:38 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-20) unstable; urgency=medium
 

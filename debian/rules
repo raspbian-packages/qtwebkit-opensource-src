@@ -44,8 +44,6 @@ ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))
 	EXTRA_CMAKE_ARGUMENTS += -DUSE_SYSTEM_MALLOC=ON
 endif
 
-DEB_CXXFLAGS_MAINT_APPEND += -fpermissive
-
 %:
 	dh $@ --buildsystem=cmake+ninja --with pkgkde_symbolshelper
 
