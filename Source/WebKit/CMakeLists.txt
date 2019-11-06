@@ -60,7 +60,7 @@ if (${PORT} STREQUAL "Qt")
             DESTINATION "${LIB_INSTALL_DIR}"
             RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
     )
-    if (MSVC)
+    if (MSVC AND NOT QT_STATIC_BUILD)
         install(FILES $<TARGET_PDB_FILE:WebKit> DESTINATION "${BIN_INSTALL_DIR}" OPTIONAL)
     endif ()
 
@@ -70,9 +70,19 @@ if (${PORT} STREQUAL "Qt")
 
     if (MACOS_BUILD_FRAMEWORKS)
         set_target_properties(WebKit PROPERTIES
-            FRAMEWORK_VERSION 5
+            FRAMEWORK_VERSION ${PROJECT_VERSION_MAJOR}
+            SOVERSION ${MACOS_COMPATIBILITY_VERSION}
             MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.QtWebKit
         )
+    endif ()
+
+    if (USE_LINKER_VERSION_SCRIPT)
+        set(VERSION_SCRIPT "${CMAKE_BINARY_DIR}/QtWebKit.version")
+        add_custom_command(TARGET WebKit PRE_LINK
+            COMMAND ${PERL_EXECUTABLE} ${TOOLS_DIR}/qt/generate-version-script.pl ${Qt5_VERSION} > ${VERSION_SCRIPT}
+            VERBATIM
+        )
+        set_target_properties(WebKit PROPERTIES LINK_FLAGS -Wl,--version-script,${VERSION_SCRIPT})
     endif ()
 
     if (ENABLE_WEBKIT2)

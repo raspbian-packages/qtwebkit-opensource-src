@@ -23,8 +23,6 @@
 #include "WebPageGroup.h"
 #include "qquickwebview_p_p.h"
 #include "qwebpreferences_p_p.h"
-#include <WKPageConfigurationRef.h>
-#include <WKPageGroup.h>
 #include <WKPreferencesRef.h>
 #include <WKRetainPtr.h>
 #include <WKStringQt.h>
@@ -68,10 +66,6 @@ bool QWebPreferencesPrivate::testAttribute(QWebPreferencesPrivate::WebAttribute 
 #if ENABLE(WEBGL)
     case WebGLEnabled:
         return WKPreferencesGetWebGLEnabled(preferencesRef);
-#if ENABLE(CSS_SHADERS)
-    case CSSCustomFilterEnabled:
-        return WKPreferencesGetCSSCustomFilterEnabled(preferencesRef);
-#endif
 #endif
 #if ENABLE(WEB_AUDIO)
     case WebAudioEnabled:
@@ -89,6 +83,10 @@ bool QWebPreferencesPrivate::testAttribute(QWebPreferencesPrivate::WebAttribute 
         return WKPreferencesGetUniversalAccessFromFileURLsAllowed(preferencesRef);
     case FileAccessFromFileURLsAllowed:
         return WKPreferencesGetFileAccessFromFileURLsAllowed(preferencesRef);
+    case LogsPageMessagesToSystemConsoleEnabled:
+        return WKPreferencesGetLogsPageMessagesToSystemConsoleEnabled(preferencesRef);
+    case WebSecurityEnabled:
+        return WKPreferencesGetWebSecurityEnabled(preferencesRef);
     default:
         ASSERT_NOT_REACHED();
         return false;
@@ -137,11 +135,6 @@ void QWebPreferencesPrivate::setAttribute(QWebPreferencesPrivate::WebAttribute a
     case WebGLEnabled:
         WKPreferencesSetWebGLEnabled(preferencesRef, enable);
         break;
-#if ENABLE(CSS_SHADERS)
-    case CSSCustomFilterEnabled:
-        WKPreferencesSetCSSCustomFilterEnabled(preferencesRef, enable);
-        break;
-#endif
 #endif
 #if ENABLE(WEB_AUDIO)
     case WebAudioEnabled:
@@ -166,6 +159,12 @@ void QWebPreferencesPrivate::setAttribute(QWebPreferencesPrivate::WebAttribute a
         break;
     case FileAccessFromFileURLsAllowed:
         WKPreferencesSetFileAccessFromFileURLsAllowed(preferencesRef, enable);
+        break;
+    case LogsPageMessagesToSystemConsoleEnabled:
+        WKPreferencesSetLogsPageMessagesToSystemConsoleEnabled(preferencesRef, enable);
+        break;
+    case WebSecurityEnabled:
+        WKPreferencesSetWebSecurityEnabled(preferencesRef, enable);
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -640,6 +639,32 @@ void QWebPreferences::setLinksIncludedInFocusChain(bool enable)
         return;
     d->setAttribute(QWebPreferencesPrivate::LinksIncludedInFocusChain, enable);
     emit linksIncludedInFocusChainChanged();
+}
+
+bool QWebPreferences::logsPageMessagesToSystemConsoleEnabled() const
+{
+    return d->testAttribute(QWebPreferencesPrivate::LogsPageMessagesToSystemConsoleEnabled);
+}
+
+void QWebPreferences::setLogsPageMessagesToSystemConsoleEnabled(bool enable)
+{
+    if (logsPageMessagesToSystemConsoleEnabled() == enable)
+        return;
+    d->setAttribute(QWebPreferencesPrivate::LogsPageMessagesToSystemConsoleEnabled, enable);
+    emit logsPageMessagesToSystemConsoleEnabledChanged();
+}
+
+bool QWebPreferences::webSecurityEnabled() const
+{
+    return d->testAttribute(QWebPreferencesPrivate::WebSecurityEnabled);
+}
+
+void QWebPreferences::setWebSecurityEnabled(bool enable)
+{
+    if (webSecurityEnabled() == enable)
+        return;
+    d->setAttribute(QWebPreferencesPrivate::WebSecurityEnabled, enable);
+    emit webSecurityEnabledChanged();
 }
 
 QWebPreferencesPrivate* QWebPreferencesPrivate::get(QWebPreferences* preferences)

@@ -206,7 +206,11 @@ static void openNewWindow(const QUrl& url, Frame* frame)
 }
 
 // FIXME: Find a better place
-Ref<UserContentController> s_userContentProvider = UserContentController::create();
+static UserContentController& userContentProvider()
+{
+    static NeverDestroyed<Ref<UserContentController>> s_userContentProvider(UserContentController::create());
+    return s_userContentProvider.get();
+}
 
 QWebPageAdapter::QWebPageAdapter()
     : settings(0)
@@ -242,7 +246,7 @@ void QWebPageAdapter::initializeWebCorePage()
     pageConfiguration.databaseProvider = &WebDatabaseProvider::singleton();
     pageConfiguration.storageNamespaceProvider = WebStorageNamespaceProvider::create(
         QWebSettings::globalSettings()->localStoragePath());
-    pageConfiguration.userContentController = &s_userContentProvider.get();
+    pageConfiguration.userContentController = &userContentProvider();
     pageConfiguration.visitedLinkStore = &VisitedLinkStoreQt::singleton();
     page = new Page(pageConfiguration);
 
@@ -436,6 +440,9 @@ bool QWebPageAdapter::findText(const QString& subString, FindFlag options)
 
     if (options & FindBeginsInSelection)
         webCoreFindOptions |= WebCore::StartInSelection;
+
+    if (options & FindAtWordEndingsOnly)
+        webCoreFindOptions |= WebCore::AtWordEnds;
 
     if (options & HighlightAllOccurrences) {
         if (subString.isEmpty()) {

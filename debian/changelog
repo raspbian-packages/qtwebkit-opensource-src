@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha2-21+rpi1) buster-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha3-5+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,71 @@ qtwebkit-opensource-src (5.212.0~alpha2-21+rpi1) buster-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Tue, 02 Apr 2019 19:29:55 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Wed, 06 Nov 2019 14:21:51 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha3-5) unstable; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+  * Bump Standards-Version to 4.4.1, no changes needed.
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 21 Oct 2019 10:56:29 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha3-4) experimental; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+  * Bump Qt build-dependencies to 5.12.5.
+  * Add Build-Depends-Package field to debian/libqt5webkit5.symbols.
+  * Bump Standards-Version to 4.4.0, no changes needed.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sun, 22 Sep 2019 18:24:25 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha3-3) experimental; urgency=medium
+
+  * Bump qtbase build-dependency to 5.12.4+dfsg-3, to make sure we build
+    with NPAPI plugins support (the needed CMake file was added there).
+  * Install QtWebPluginProcess executable in libqt5webkit5 package.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 05 Jul 2019 22:48:44 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha3-2) experimental; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 04 Jul 2019 14:32:17 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha3-1) experimental; urgency=medium
+
+  * New upstream alpha release.
+  * Update Homepage and debian/watch for GitHub repository rename
+    (annulen/webkit → qtwebkit/qtwebkit).
+  * Drop all patches except reduce_exports.diff and path_max.diff,
+    all have been applied in the new release.
+  * Refresh debian/patches/reduce_exports.diff.
+  * Bump Qt build-dependencies to 5.12.4.
+  * Stop running pngcrush during build, the broken files were fixed
+    upstream.
+  * Update debian/libqt5webkit5.install to match upstream process name
+    change (QtWebDatabaseProcess → QtWebStorageProcess).
+  * Add private .pri files to debian/not-installed.
+  * Update debian/libqt5webkit5.symbols from the current build log.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sun, 30 Jun 2019 15:57:32 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha2-23) experimental; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+  * Bump Qt build-dependencies to 5.12.3.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 29 Apr 2019 11:30:50 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha2-22) experimental; urgency=medium
+
+  * Bump Qt build-dependencies to 5.12.2.
+  * Use -g1 instead of -g on all architectures.
+  * Update symbols files from buildds’ logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 26 Mar 2019 13:38:39 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha2-21) unstable; urgency=medium
 

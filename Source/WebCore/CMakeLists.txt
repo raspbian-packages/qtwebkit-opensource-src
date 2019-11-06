@@ -68,6 +68,7 @@ set(WebCore_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}/platform"
     "${WEBCORE_DIR}/platform/animation"
     "${WEBCORE_DIR}/platform/audio"
+    "${WEBCORE_DIR}/platform/crypto"
     "${WEBCORE_DIR}/platform/graphics"
     "${WEBCORE_DIR}/platform/graphics/cpu/arm"
     "${WEBCORE_DIR}/platform/graphics/cpu/arm/filters"
@@ -3357,7 +3358,7 @@ if (USE_WOFF2)
         list(APPEND WebCore_INCLUDE_DIRECTORIES "${WOFF2DEC_INCLUDE_DIRS}")
         list(APPEND WebCore_LIBRARIES "${WOFF2DEC_LIBRARIES}")
     else ()
-        list(APPEND WebCore_INCLUDE_DIRECTORIES "${THIRDPARTY_DIR}/woff2/src")
+        list(APPEND WebCore_INCLUDE_DIRECTORIES "${THIRDPARTY_DIR}/woff2/include")
         list(APPEND WebCore_LIBRARIES woff2)
     endif ()
 endif ()
@@ -3563,9 +3564,11 @@ if (WebCore_USER_AGENT_SCRIPTS)
     MAKE_JS_FILE_ARRAYS(
         ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentScriptsData.cpp
         ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentScripts.h
+        WebCore
         WebCore_USER_AGENT_SCRIPTS
         WebCore_USER_AGENT_SCRIPTS_DEPENDENCIES
     )
+    list(APPEND WebCore_DERIVED_SOURCES ${DERIVED_SOURCES_WEBCORE_DIR}/UserAgentScriptsData.cpp)
 endif ()
 
 # Generate plug-in resources

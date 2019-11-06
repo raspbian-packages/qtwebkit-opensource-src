@@ -214,8 +214,6 @@ public:
     void updateCachedDocumentLoader(DocumentLoader &) override;
     void prefetchDNS(const WTF::String &) override;
 
-    QString chooseFile(const QString& oldFile);
-
     PassRefPtr<FrameNetworkingContext> createNetworkingContext() override;
 
     const URL& lastRequestedUrl() const { return m_lastRequestedUrl; }
@@ -256,6 +254,10 @@ private:
 
     URL m_lastRequestedUrl;
     bool m_isOriginatingLoad;
+
+    // QTFIXME: consider introducing some sort of flags for storing state
+    bool m_isDisplayingErrorPage;
+    bool m_shouldSuppressLoadStarted;
 };
 
 }

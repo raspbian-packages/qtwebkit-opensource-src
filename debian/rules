@@ -8,12 +8,9 @@ include /usr/share/dpkg/architecture.mk
 export DEB_CPPFLAGS_MAINT_APPEND = -DNDEBUG
 
 # The debug packages produced by webkit are huge and cause problems in
-# most buildds, so use -g1 in all architectures except the ones that
-# are known to work fine
-ifeq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64 ppc64el s390x))
-	export DEB_CXXFLAGS_MAINT_STRIP = -g
-	export DEB_CXXFLAGS_MAINT_APPEND = -g1
-endif
+# most buildds, so use -g1 instead of -g
+export DEB_CXXFLAGS_MAINT_STRIP = -g
+export DEB_CXXFLAGS_MAINT_APPEND = -g1
 
 # See https://github.com/annulen/webkit/issues/626
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),mips mipsel))
@@ -49,19 +46,6 @@ endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- -DPORT=Qt $(EXTRA_CMAKE_ARGUMENTS)
-
-override_dh_auto_build:
-	# Fix QTBUG-71134 (libpng warning: iCCP: known incorrect sRGB profile)
-	pngcrush -ow -fix ./Source/WebCore/Resources/nullPlugin@2x.png
-	pngcrush -ow -fix ./Source/WebCore/Resources/textAreaResizeCorner@2x.png
-	dh_auto_build
-
-override_dh_auto_install:
-	dh_auto_install
-
-	# Remove private headers
-	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKit/*/QtWebKit
-	rm -rf debian/tmp/usr/include/$(DEB_HOST_MULTIARCH)/qt5/QtWebKitWidgets/*/QtWebKitWidgets
 
 override_dh_missing:
 	dh_missing --fail-missing

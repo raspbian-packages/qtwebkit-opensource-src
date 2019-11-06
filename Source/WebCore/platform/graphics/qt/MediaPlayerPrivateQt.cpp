@@ -25,13 +25,10 @@
 #include "GraphicsContext.h"
 #include "GraphicsLayer.h"
 #include "HTMLMediaElement.h"
-#include "HTMLVideoElement.h"
 #include "Logging.h"
 #include "NetworkingContext.h"
 #include "NotImplemented.h"
 #include "RenderVideo.h"
-#include "TimeRanges.h"
-#include "Widget.h"
 
 #include <QMediaPlayerControl>
 #include <QMediaService>
@@ -83,7 +80,7 @@ MediaPlayer::SupportsType MediaPlayerPrivateQt::supportsType(const MediaEngineSu
     if (parameters.isMediaStream || parameters.isMediaSource)
         return MediaPlayer::IsNotSupported;
 
-    if (!parameters.type.startsWith("audio/") && !parameters.type.startsWith("video/"))
+    if (!parameters.type.startsWithIgnoringASCIICase("audio/") && !parameters.type.startsWithIgnoringASCIICase("video/"))
         return MediaPlayer::IsNotSupported;
 
     // Parse and trim codecs.

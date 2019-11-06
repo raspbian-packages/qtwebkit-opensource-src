@@ -16,7 +16,7 @@ Last-Update: 2017-08-27
  
 --- a/Source/cmake/OptionsQt.cmake
 +++ b/Source/cmake/OptionsQt.cmake
-@@ -546,6 +546,7 @@
+@@ -658,6 +658,7 @@ if (COMPILER_IS_GCC_OR_CLANG AND UNIX)
      if (NOT SHARED_CORE)
          set(CMAKE_C_FLAGS "-fvisibility=hidden ${CMAKE_C_FLAGS}")
          set(CMAKE_CXX_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden ${CMAKE_CXX_FLAGS}")

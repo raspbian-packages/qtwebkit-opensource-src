@@ -38,14 +38,15 @@ public:
         DnsPrefetchEnabled,
         DeveloperExtrasEnabled,
         WebGLEnabled,
-        CSSCustomFilterEnabled,
         WebAudioEnabled,
         CaretBrowsingEnabled,
         NotificationsEnabled,
         UniversalAccessFromFileURLsAllowed,
         FileAccessFromFileURLsAllowed,
         SpatialNavigationEnabled,
-        LinksIncludedInFocusChain
+        LinksIncludedInFocusChain,
+        LogsPageMessagesToSystemConsoleEnabled,
+        WebSecurityEnabled
     };
 
     enum FontFamily {

@@ -21,9 +21,9 @@ Build-Depends: bison,
                libicu-dev,
                libjpeg-dev,
                libpng-dev,
-               libqt5opengl5-dev (>= 5.11.3+dfsg~),
-               libqt5sensors5-dev (>= 5.11.3~),
-               libqt5webchannel5-dev (>= 5.11.3~),
+               libqt5opengl5-dev (>= 5.12.5+dfsg~),
+               libqt5sensors5-dev (>= 5.12.5~),
+               libqt5webchannel5-dev (>= 5.12.5~),
                libsqlite3-dev,
                libwebp-dev,
                libwoff-dev,
@@ -35,18 +35,17 @@ Build-Depends: bison,
                ninja-build,
                pkg-config,
                pkg-kde-tools (>= 0.6.4),
-               pngcrush,
                python-minimal:native,
                python2.7:native,
-               qtbase5-private-dev (>= 5.11.3+dfsg~),
-               qtdeclarative5-private-dev (>= 5.11.3~),
-               qtpositioning5-dev (>= 5.11.3+dfsg~),
+               qtbase5-private-dev (>= 5.12.5+dfsg~),
+               qtdeclarative5-private-dev (>= 5.12.5~),
+               qtpositioning5-dev (>= 5.12.5+dfsg~),
                ruby:native,
                xauth <!nocheck>,
                xvfb <!nocheck>
-Standards-Version: 4.3.0
+Standards-Version: 4.4.1
 Section: libs
-Homepage: https://github.com/annulen/webkit
+Homepage: https://github.com/qtwebkit/qtwebkit
 Vcs-Git: https://salsa.debian.org/qt-kde-team/qt/qt5webkit.git
 Vcs-Browser: https://salsa.debian.org/qt-kde-team/qt/qt5webkit
 

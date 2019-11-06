@@ -23,7 +23,6 @@
 
 #include "DefaultUndoController.h"
 #include "PageViewportController.h"
-#include "PageViewportControllerClient.h"
 #include "QtPageClient.h"
 #include "QtWebPageUIClient.h"
 
@@ -129,7 +128,6 @@ public:
     // PageClient.
     WebCore::IntSize viewSize() const;
     virtual void pageDidRequestScroll(const QPoint& pos) { }
-    void processDidCrash();
     void didRelaunchProcess();
     std::unique_ptr<WebKit::DrawingAreaProxy> createDrawingAreaProxy();
     void handleDownloadRequest(WebKit::DownloadProxy*);
@@ -177,6 +175,7 @@ protected:
     static void didChangeBackForwardList(WKPageRef, WKBackForwardListItemRef, WKArrayRef, const void *clientInfo);
     static void processDidBecomeUnresponsive(WKPageRef, const void* clientInfo);
     static void processDidBecomeResponsive(WKPageRef, const void* clientInfo);
+    static void processDidCrash(WKPageRef, const void* clientInfo);
 
     QQuickWebViewPrivate(QQuickWebView* viewport);
     RefPtr<WebKit::WebPageProxy> webPageProxy;

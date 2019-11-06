@@ -213,6 +213,8 @@ FrameLoaderClientQt::FrameLoaderClientQt()
     , m_pluginView(0)
     , m_hasSentResponseToPlugin(false)
     , m_isOriginatingLoad(false)
+    , m_isDisplayingErrorPage(false)
+    , m_shouldSuppressLoadStarted(false)
 {
 }
 
@@ -929,10 +931,12 @@ void FrameLoaderClientQt::convertMainResourceLoadToDownload(DocumentLoader* docu
 
     QNetworkReply* reply = handler->release();
     if (reply) {
-        if (m_webFrame->pageAdapter->forwardUnsupportedContent)
+        if (m_webFrame->pageAdapter->forwardUnsupportedContent) {
             emit unsupportedContent(reply);
-        else
+        } else {
             reply->abort();
+            reply->deleteLater();
+        }
     }
 }
 
@@ -1087,6 +1091,9 @@ bool FrameLoaderClientQt::callErrorPageExtension(const WebCore::ResourceError& e
     if (!page->errorPageExtension(&option, &output))
         return false;
 
+    m_isDisplayingErrorPage = true;
+    m_shouldSuppressLoadStarted = true;
+
     URL baseUrl(output.baseUrl);
     URL failingUrl(option.url);
 
@@ -1096,6 +1103,9 @@ bool FrameLoaderClientQt::callErrorPageExtension(const WebCore::ResourceError& e
     // FIXME: visibility?
     WebCore::SubstituteData substituteData(buffer, failingUrl, response, SubstituteData::SessionHistoryVisibility::Hidden);
     m_frame->loader().load(WebCore::FrameLoadRequest(m_frame, request, ShouldOpenExternalURLsPolicy::ShouldNotAllow /*FIXME*/, substituteData));
+
+    m_shouldSuppressLoadStarted = false;
+
     return true;
 }
 
@@ -1105,8 +1115,7 @@ void FrameLoaderClientQt::dispatchDidFailProvisionalLoad(const WebCore::Resource
         printf("%s - didFailProvisionalLoadWithError\n", qPrintable(drtDescriptionSuitableForTestResult(m_frame)));
 
     if (!error.isNull() && !error.isCancellation()) {
-        if (callErrorPageExtension(error))
-            return;
+        callErrorPageExtension(error);
     }
 
     if (m_webFrame)
@@ -1119,8 +1128,7 @@ void FrameLoaderClientQt::dispatchDidFailLoad(const WebCore::ResourceError& erro
         printf("%s - didFailLoadWithError\n", qPrintable(drtDescriptionSuitableForTestResult(m_frame)));
 
     if (!error.isNull() && !error.isCancellation()) {
-        if (callErrorPageExtension(error))
-            return;
+        callErrorPageExtension(error);
     }
 
     if (m_webFrame)
@@ -1233,7 +1241,9 @@ void FrameLoaderClientQt::startDownload(const WebCore::ResourceRequest& request,
     if (!m_webFrame)
         return;
 
-    m_webFrame->pageAdapter->emitDownloadRequested(request.toNetworkRequest(m_frame->loader().networkingContext()));
+    QNetworkRequest r = request.toNetworkRequest(m_frame->loader().networkingContext());
+    if (r.url().isValid())
+        m_webFrame->pageAdapter->emitDownloadRequested(r);
 }
 
 RefPtr<Frame> FrameLoaderClientQt::createFrame(const URL& url, const String& name, HTMLFrameOwnerElement* ownerElement, const String& referrer, bool allowsScrolling, int marginWidth, int marginHeight)
@@ -1515,12 +1525,6 @@ String FrameLoaderClientQt::overrideMediaType() const
     return String();
 }
 
-QString FrameLoaderClientQt::chooseFile(const QString& oldFile)
-{
-    QStringList result = m_webFrame->pageAdapter->chooseFiles(m_webFrame, /*allowMulti*/ false, (QStringList() << oldFile));
-    return result.isEmpty() ? QString() : result.first();
-}
-
 PassRefPtr<FrameNetworkingContext> FrameLoaderClientQt::createNetworkingContext()
 {
     QVariant value = m_webFrame->pageAdapter->handle()->property("_q_MIMESniffingDisabled");
@@ -1536,11 +1540,19 @@ QWebFrameAdapter* FrameLoaderClientQt::webFrame() const
 
 void FrameLoaderClientQt::emitLoadStarted()
 {
+    if (m_shouldSuppressLoadStarted)
+        return;
+
+    m_isDisplayingErrorPage = false;
+
     m_webFrame->emitLoadStarted(m_isOriginatingLoad);
 }
 
 void FrameLoaderClientQt::emitLoadFinished(bool ok)
 {
+    if (ok && m_isDisplayingErrorPage)
+        return;
+
     // Signal handlers can lead to a new load, that will use the member again.
     const bool wasOriginatingLoad = m_isOriginatingLoad;
     m_isOriginatingLoad = false;

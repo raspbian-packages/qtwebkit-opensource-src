@@ -106,6 +106,8 @@ LauncherWindow::LauncherWindow(WindowOptions* data, QGraphicsScene* sharedScene)
     createChrome();
 #if !defined(QT_NO_FILEDIALOG) && !defined(QT_NO_MESSAGEBOX)
     connect(page(), SIGNAL(downloadRequested(const QNetworkRequest&)), this, SLOT(downloadRequest(const QNetworkRequest&)));
+    connect(page()->networkAccessManager(), SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)),
+            this, SLOT(showSSLErrorConfirmation(QNetworkReply*, const QList<QSslError>&)));
 #endif
 }
 
@@ -168,9 +170,9 @@ void LauncherWindow::initializeView()
     } else {
         WebViewGraphicsBased* view = new WebViewGraphicsBased(splitter);
         m_view = view;
-#ifndef QT_NO_OPENGL
         if (!m_windowOptions.useQOpenGLWidgetViewport)
             toggleQGLWidgetViewport(m_windowOptions.useQGLWidgetViewport);
+#ifdef QT_OPENGL_LIB
         if (!m_windowOptions.useQGLWidgetViewport)
             toggleQOpenGLWidgetViewport(m_windowOptions.useQOpenGLWidgetViewport);
 #endif
@@ -222,6 +224,7 @@ void LauncherWindow::applyPrefs()
     settings->setAttribute(QWebSettings::TiledBackingStoreEnabled, m_windowOptions.useTiledBackingStore);
     settings->setAttribute(QWebSettings::FrameFlatteningEnabled, m_windowOptions.useFrameFlattening);
     settings->setAttribute(QWebSettings::WebGLEnabled, m_windowOptions.useWebGL);
+    settings->setAttribute(QWebSettings::MediaEnabled, m_windowOptions.useMedia);
     m_windowOptions.useWebAudio = settings->testAttribute(QWebSettings::WebAudioEnabled);
     m_windowOptions.useMediaSource = settings->testAttribute(QWebSettings::MediaSourceEnabled);
 
@@ -326,6 +329,15 @@ void LauncherWindow::createChrome()
     toggleWebGL->setEnabled(false);
 #endif
 
+    QAction* toggleMedia = toolsMenu->addAction("Toggle Media", this, SLOT(toggleMedia(bool)));
+    toggleMedia->setCheckable(true);
+#if ENABLE(VIDEO)
+    toggleMedia->setChecked(settings->testAttribute(QWebSettings::MediaEnabled));
+#else
+    toggleMedia->setChecked(false);
+    toggleMedia->setEnabled(false);
+#endif
+
     QAction* toggleWebAudio = toolsMenu->addAction("Toggle WebAudio", this, SLOT(toggleWebAudio(bool)));
     toggleWebAudio->setCheckable(true);
 #if ENABLE(WEB_AUDIO)
@@ -336,7 +348,7 @@ void LauncherWindow::createChrome()
 
     QAction* toggleMediaSource = toolsMenu->addAction("Toggle MediaSource", this, SLOT(toggleMediaSource(bool)));
     toggleMediaSource->setCheckable(true);
-    toggleWebGL->setChecked(settings->testAttribute(QWebSettings::MediaSourceEnabled));
+    toggleMediaSource->setChecked(settings->testAttribute(QWebSettings::MediaSourceEnabled));
 #if !ENABLE(MEDIA_SOURCE)
     toggleMediaSource->setEnabled(false);
 #endif
@@ -344,6 +356,9 @@ void LauncherWindow::createChrome()
     QAction* spatialNavigationAction = toolsMenu->addAction("Toggle Spatial Navigation", this, SLOT(toggleSpatialNavigation(bool)));
     spatialNavigationAction->setCheckable(true);
     spatialNavigationAction->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
+
+    QAction* caretBrowsingAction = toolsMenu->addAction("Toggle Caret Browsing", this, SLOT(toggleCaretBrowsing(bool)));
+    caretBrowsingAction->setCheckable(true);
 
     QAction* toggleFrameFlattening = toolsMenu->addAction("Toggle Frame Flattening", this, SLOT(toggleFrameFlattening(bool)));
     toggleFrameFlattening->setCheckable(true);
@@ -945,6 +960,12 @@ void LauncherWindow::toggleWebGL(bool toggle)
     page()->settings()->setAttribute(QWebSettings::WebGLEnabled, toggle);
 }
 
+void LauncherWindow::toggleMedia(bool toggle)
+{
+    m_windowOptions.useMedia = toggle;
+    page()->settings()->setAttribute(QWebSettings::MediaEnabled, toggle);
+}
+
 void LauncherWindow::toggleWebAudio(bool toggle)
 {
     m_windowOptions.useWebAudio = toggle;
@@ -970,6 +991,11 @@ void LauncherWindow::animatedYFlip()
 void LauncherWindow::toggleSpatialNavigation(bool enable)
 {
     page()->settings()->setAttribute(QWebSettings::SpatialNavigationEnabled, enable);
+}
+
+void LauncherWindow::toggleCaretBrowsing(bool enable)
+{
+    page()->settings()->setAttribute(QWebSettings::CaretBrowsingEnabled, enable);
 }
 
 void LauncherWindow::toggleFullScreenMode(bool enable)
@@ -1134,6 +1160,23 @@ void LauncherWindow::showUserAgentDialog()
     delete dialog;
 }
 
+void LauncherWindow::showSSLErrorConfirmation(QNetworkReply* reply, const QList<QSslError>& errors)
+{
+    QString errorStrings = "<ul>";
+    for (const QSslError& error : errors)
+        errorStrings += "<li>" + error.errorString() + "</li>";
+    errorStrings += "</ul>";
+
+    QMessageBox sslWarningBox;
+    sslWarningBox.setText("TLS handshake problem");
+    sslWarningBox.setInformativeText(errorStrings);
+    sslWarningBox.setStandardButtons(QMessageBox::Abort | QMessageBox::Ignore);
+    sslWarningBox.setDefaultButton(QMessageBox::Abort);
+    sslWarningBox.setIcon(QMessageBox::Warning);
+    if (sslWarningBox.exec() == QMessageBox::Ignore)
+        reply->ignoreSslErrors();
+}
+
 void LauncherWindow::loadURLListFromFile()
 {
     QString selectedFile;
@@ -1164,9 +1207,13 @@ void LauncherWindow::downloadRequest(const QNetworkRequest &request)
 
 void LauncherWindow::fileDownloadFinished()
 {
-    QFileInfo fileInf(m_reply->request().url().toString());
-    QString requestFileName = QDir::homePath() + "/" + fileInf.fileName();
-    QString fileName = QFileDialog::getSaveFileName(this, "Save as...", requestFileName, "All Files (*)");
+    QString suggestedFileName;
+    if (m_reply->request().url().scheme().toLower() != QLatin1String("data")) {
+        QFileInfo fileInf(m_reply->request().url().toString());
+        suggestedFileName = QDir::homePath() + "/" + fileInf.fileName();
+    } else
+        suggestedFileName = QStringLiteral("data");
+    QString fileName = QFileDialog::getSaveFileName(this, "Save as...", suggestedFileName, "All Files (*)");
 
     if (fileName.isEmpty())
         return;

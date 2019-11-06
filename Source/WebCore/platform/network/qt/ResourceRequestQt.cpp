@@ -18,17 +18,30 @@
 */
 
 #include "config.h"
-#include "NetworkingContext.h"
 #include "ResourceRequest.h"
+
+#include "BlobUrlConversion.h"
+#include "NetworkingContext.h"
 #include "ThirdPartyCookiesQt.h"
-
-#include "BlobData.h"
-#include "BlobRegistryImpl.h"
-
-#include <qglobal.h>
 
 #include <QNetworkRequest>
 #include <QUrl>
+
+// HTTP/2 is implemented since Qt 5.8, but various QtNetwork bugs make it unusable in browser with Qt < 5.10.1
+// We also don't enable HTTP/2 for unencrypted connections because of possible compatibility issues; it can be
+// enabled manually by user application via custom QNAM subclass
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 1)
+#include <QSslSocket>
+#define USE_HTTP2 1
+
+// Don't enable HTTP/2 when ALPN support status is unknown
+// Before QTBUG-65903 is implemented there is no better way than to check OpenSSL version
+static bool alpnIsSupported()
+{
+    return QSslSocket::sslLibraryVersionNumber() > 0x10002000L &&
+        QSslSocket::sslLibraryVersionString().startsWith(QLatin1String("OpenSSL"));
+}
+#endif
 
 namespace WebCore {
 
@@ -43,44 +56,11 @@ unsigned initializeMaximumHTTPConnectionCountPerHost()
     return 6 * (1 + 3 + 2);
 }
 
-static void appendBlobResolved(QByteArray& data, const QUrl& url, QString* contentType = 0)
+static QUrl toQUrl(const URL& url)
 {
-    RefPtr<BlobData> blobData = static_cast<BlobRegistryImpl&>(blobRegistry()).getBlobDataFromURL(url);
-    if (!blobData)
-        return;
-
-    if (contentType)
-        *contentType = blobData->contentType();
-
-    BlobDataItemList::const_iterator it = blobData->items().begin();
-    const BlobDataItemList::const_iterator itend = blobData->items().end();
-    for (; it != itend; ++it) {
-        const BlobDataItem& blobItem = *it;
-        if (blobItem.type() == BlobDataItem::Type::Data)
-            data.append(reinterpret_cast<const char*>(blobItem.data().data()->data()) + static_cast<int>(blobItem.offset()), static_cast<int>(blobItem.length()));
-        else if (blobItem.type() == BlobDataItem::Type::File) {
-            // File types are not allowed here, so just ignore it.
-            RELEASE_ASSERT_WITH_MESSAGE(false, "File types are not allowed here");
-        } else
-            ASSERT_NOT_REACHED();
-    }
-}
-
-static void resolveBlobUrl(const QUrl& url, QUrl& resolvedUrl)
-{
-    RefPtr<BlobData> blobData = static_cast<BlobRegistryImpl&>(blobRegistry()).getBlobDataFromURL(url);
-    if (!blobData)
-        return;
-
-    QByteArray data;
-    QString contentType;
-    appendBlobResolved(data, url, &contentType);
-
-    QString dataUri(QStringLiteral("data:"));
-    dataUri.append(contentType);
-    dataUri.append(QStringLiteral(";base64,"));
-    dataUri.append(QString::fromLatin1(data.toBase64()));
-    resolvedUrl = QUrl(dataUri);
+    if (url.protocolIsBlob())
+        return convertBlobToDataUrl(url);
+    return url;
 }
 
 static inline QByteArray stringToByteArray(const String& string)
@@ -93,13 +73,15 @@ static inline QByteArray stringToByteArray(const String& string)
 QNetworkRequest ResourceRequest::toNetworkRequest(NetworkingContext *context) const
 {
     QNetworkRequest request;
-    QUrl newurl = url();
-
-    if (newurl.scheme() == QLatin1String("blob"))
-        resolveBlobUrl(url(), newurl);
-
-    request.setUrl(newurl);
+    const URL& originalUrl = url();
+    request.setUrl(toQUrl(originalUrl));
     request.setOriginatingObject(context ? context->originatingObject() : 0);
+
+#if USE(HTTP2)
+    static const bool NegotiateHttp2ForHttps = alpnIsSupported();
+    if (originalUrl.protocolIs("https") && NegotiateHttp2ForHttps)
+        request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, true);
+#endif // USE(HTTP2)
 
     const HTTPHeaderMap &headers = httpHeaderFields();
     for (HTTPHeaderMap::const_iterator it = headers.begin(), end = headers.end();

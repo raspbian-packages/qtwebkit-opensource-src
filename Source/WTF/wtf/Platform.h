@@ -238,7 +238,8 @@
     || defined(__ARM_ARCH_7S__)
 #define WTF_ARM_ARCH_VERSION 7
 
-#elif defined(__ARM_ARCH_8__)
+#elif defined(__ARM_ARCH_8__) \
+    || defined(__ARM_ARCH_8A__)
 #define WTF_ARM_ARCH_VERSION 8
 
 /* MSVC sets _M_ARM */
@@ -626,12 +627,6 @@
 #define HAVE_PTHREAD_NP_H 1
 #endif
 
-#if !defined(HAVE_VASPRINTF)
-#if !COMPILER(MSVC) && !COMPILER(MINGW)
-#define HAVE_VASPRINTF 1
-#endif
-#endif
-
 #if !defined(HAVE_STRNSTR)
 #if OS(DARWIN) || (OS(FREEBSD) && !defined(__GLIBC__))
 #define HAVE_STRNSTR 1
@@ -900,7 +895,7 @@
 /* Pick which allocator to use; we only need an executable allocator if the assembler is compiled in.
    On non-Windows x86-64, iOS, and ARM64 we use a single fixed mmap, on other platforms we mmap on demand. */
 #if ENABLE(ASSEMBLER)
-#if CPU(X86_64) || PLATFORM(IOS) || CPU(ARM64)
+#if CPU(X86_64) || PLATFORM(IOS) || CPU(ARM64) || CPU(MIPS)
 #define ENABLE_EXECUTABLE_ALLOCATOR_FIXED 1
 #else
 #define ENABLE_EXECUTABLE_ALLOCATOR_DEMAND 1
@@ -1033,7 +1028,7 @@
 #define USE_VIDEOTOOLBOX 1
 #endif
 
-#if PLATFORM(COCOA) || PLATFORM(GTK) || (PLATFORM(WIN) && !USE(WINGDI))
+#if PLATFORM(COCOA) || PLATFORM(GTK) || PLATFORM(QT) || (PLATFORM(WIN) && !USE(WINGDI))
 #define USE_REQUEST_ANIMATION_FRAME_TIMER 1
 #endif
 
@@ -1057,7 +1052,10 @@
 
 #if PLATFORM(QT)
 #ifdef __cplusplus
+#include <qglobal.h>
+#if QT_VERSION >= QT_VERSION_CHECK(5,8,0)
 #include <QtGui/qtguiglobal.h>
+#endif
 #endif
 #if defined(QT_OPENGL_ES_2) && !defined(USE_OPENGL_ES_2)
 #define USE_OPENGL_ES_2 1
@@ -1130,10 +1128,6 @@
 #if COMPILER(MSVC)
 #undef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
-#if _MSC_VER < 1900
-#undef _HAS_EXCEPTIONS
-#define _HAS_EXCEPTIONS 1
-#endif
 #endif
 
 #if PLATFORM(MAC)

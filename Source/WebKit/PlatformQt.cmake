@@ -5,7 +5,7 @@ include(ECMGeneratePriFile)
 macro(generate_header _file _var _content)
     file(GENERATE OUTPUT ${_file} CONTENT ${_content})
     list(APPEND ${_var} ${_file})
-    set_source_files_properties(${_file} PROPERTIES GENERATED TRUE)
+    set_source_files_properties(${_file} PROPERTIES GENERATED TRUE SKIP_AUTOMOC TRUE)
 endmacro()
 
 macro(generate_version_header _file _var _prefix)
@@ -13,12 +13,24 @@ macro(generate_version_header _file _var _prefix)
     configure_file(VersionHeader.h.in ${_file} @ONLY)
     unset(HEADER_PREFIX)
     list(APPEND ${_var} ${_file})
-    set_source_files_properties(${_file} PROPERTIES GENERATED TRUE)
+    set_source_files_properties(${_file} PROPERTIES GENERATED TRUE SKIP_AUTOMOC TRUE)
+endmacro()
+
+macro(append_lib_names_to_list _lib_names_list)
+    foreach (_lib_filename ${ARGN})
+        get_filename_component(_lib_name_we ${_lib_filename} NAME_WE)
+        if (NOT MSVC)
+            string(REGEX REPLACE "^lib" "" _lib_name_we ${_lib_name_we})
+        endif ()
+        list(APPEND ${_lib_names_list} ${_lib_name_we})
+    endforeach ()
 endmacro()
 
 if (${JavaScriptCore_LIBRARY_TYPE} MATCHES STATIC)
     add_definitions(-DSTATICALLY_LINKED_WITH_WTF -DSTATICALLY_LINKED_WITH_JavaScriptCore)
 endif ()
+
+QTWEBKIT_SKIP_AUTOMOC(WebKit)
 
 list(APPEND WebKit_INCLUDE_DIRECTORIES
     "${WEBCORE_DIR}"
@@ -341,6 +353,7 @@ if (NOT SHARED_CORE)
         list(APPEND WebKit_SOURCES
             "${DERIVED_SOURCES_WEBINSPECTORUI_DIR}/qrc_WebInspector.cpp"
         )
+        set_property(SOURCE "${DERIVED_SOURCES_WEBINSPECTORUI_DIR}/qrc_WebInspector.cpp" PROPERTY SKIP_AUTOMOC ON)
     endif ()
 endif ()
 
@@ -415,7 +428,7 @@ install(
     COMPONENT Data
 )
 
-set(WEBKIT_PKGCONGIG_DEPS "Qt5Core Qt5Gui Qt5Network")
+set(WEBKIT_PKGCONFIG_DEPS "Qt5Core Qt5Gui Qt5Network")
 set(WEBKIT_PRI_DEPS "core gui network")
 set(WEBKIT_PRI_EXTRA_LIBS "")
 set(WEBKIT_PRI_RUNTIME_DEPS "core_private gui_private")
@@ -432,8 +445,15 @@ endif ()
 if (ENABLE_DEVICE_ORIENTATION)
     set(WEBKIT_PRI_RUNTIME_DEPS "sensors ${WEBKIT_PRI_RUNTIME_DEPS}")
 endif ()
+if (USE_MEDIA_FOUNDATION)
+    set(WEBKIT_PRI_EXTRA_LIBS "-lmfuuid -lstrmiids ${WEBKIT_PRI_EXTRA_LIBS}")
+endif ()
+if (USE_QT_MULTIMEDIA)
+    set(WEBKIT_PKGCONFIG_DEPS "${WEBKIT_PKGCONFIG_DEPS} Qt5Multimedia")
+    set(WEBKIT_PRI_RUNTIME_DEPS "multimedia ${WEBKIT_PRI_RUNTIME_DEPS}")
+endif ()
 
-set(WEBKITWIDGETS_PKGCONGIG_DEPS "${WEBKIT_PKGCONGIG_DEPS} Qt5Widgets Qt5WebKit")
+set(WEBKITWIDGETS_PKGCONFIG_DEPS "${WEBKIT_PKGCONFIG_DEPS} Qt5Widgets Qt5WebKit")
 set(WEBKITWIDGETS_PRI_DEPS "${WEBKIT_PRI_DEPS} widgets webkit")
 set(WEBKITWIDGETS_PRI_RUNTIME_DEPS "${WEBKIT_PRI_RUNTIME_DEPS} widgets_private")
 
@@ -445,24 +465,27 @@ if (ENABLE_PRINT_SUPPORT)
     set(WEBKITWIDGETS_PRI_RUNTIME_DEPS "${WEBKITWIDGETS_PRI_RUNTIME_DEPS} printsupport")
 endif ()
 
+if (USE_QT_MULTIMEDIA)
+    set(WEBKITWIDGETS_PKGCONFIG_DEPS "${WEBKITWIDGETS_PKGCONFIG_DEPS} Qt5MultimediaWidgets")
+    set(WEBKITWIDGETS_PRI_RUNTIME_DEPS "${WEBKITWIDGETS_PRI_RUNTIME_DEPS} multimediawidgets")
+endif ()
+
 if (QT_STATIC_BUILD)
-    if (MSVC)
-        set(LIB_PREFIX "lib")
-    endif ()
-    set(WEBKITWIDGETS_PKGCONGIG_DEPS "${WEBKITWIDGETS_PKGCONGIG_DEPS} Qt5PrintSupport")
+    set(WEBKITWIDGETS_PKGCONFIG_DEPS "${WEBKITWIDGETS_PKGCONFIG_DEPS} Qt5PrintSupport")
     set(WEBKITWIDGETS_PRI_DEPS "${WEBKITWIDGETS_PRI_DEPS} printsupport")
-    set(EXTRA_LIBS_NAMES WebCore JavaScriptCore WTF xml2)
+    set(EXTRA_LIBS_NAMES WebCore JavaScriptCore WTF)
+    append_lib_names_to_list(EXTRA_LIBS_NAMES ${LIBXML2_LIBRARIES} ${SQLITE_LIBRARIES} ${ZLIB_LIBRARIES} ${JPEG_LIBRARIES} ${PNG_LIBRARIES})
     if (NOT USE_SYSTEM_MALLOC)
         list(APPEND EXTRA_LIBS_NAMES bmalloc)
     endif ()
     if (ENABLE_XSLT)
-        list(APPEND EXTRA_LIBS_NAMES xslt)
+        append_lib_names_to_list(EXTRA_LIBS_NAMES ${LIBXSLT_LIBRARIES})
     endif ()
     if (USE_LIBHYPHEN)
-        list(APPEND EXTRA_LIBS_NAMES hyphen)
+        append_lib_names_to_list(EXTRA_LIBS_NAMES ${HYPHEN_LIBRARIES})
     endif ()
     if (USE_WEBP)
-        list(APPEND EXTRA_LIBS_NAMES webp)
+        append_lib_names_to_list(EXTRA_LIBS_NAMES ${WEBP_LIBRARIES})
     endif ()
     if (USE_WOFF2)
         list(APPEND EXTRA_LIBS_NAMES woff2 brotli)
@@ -470,8 +493,9 @@ if (QT_STATIC_BUILD)
     if (APPLE)
         list(APPEND EXTRA_LIBS_NAMES icucore)
     endif ()
+    list(REMOVE_DUPLICATES EXTRA_LIBS_NAMES)
     foreach (LIB_NAME ${EXTRA_LIBS_NAMES})
-        set(WEBKIT_PKGCONGIG_DEPS "${WEBKIT_PKGCONGIG_DEPS} ${LIB_PREFIX}${LIB_NAME}")
+        set(WEBKIT_PKGCONFIG_DEPS "${WEBKIT_PKGCONFIG_DEPS} ${LIB_PREFIX}${LIB_NAME}")
         set(WEBKIT_PRI_EXTRA_LIBS "${WEBKIT_PRI_EXTRA_LIBS} -l${LIB_PREFIX}${LIB_NAME}")
     endforeach ()
 endif ()
@@ -481,7 +505,7 @@ if (NOT MACOS_BUILD_FRAMEWORKS)
         BASE_NAME Qt5WebKit
         DESCRIPTION "Qt WebKit module"
         INCLUDE_INSTALL_DIR "${KDE_INSTALL_INCLUDEDIR}/QtWebKit"
-        DEPS "${WEBKIT_PKGCONGIG_DEPS}"
+        DEPS "${WEBKIT_PKGCONFIG_DEPS}"
         FILENAME_VAR WebKit_PKGCONFIG_FILENAME
     )
     set(ECM_PKGCONFIG_INSTALL_DIR "${LIB_INSTALL_DIR}/pkgconfig" CACHE PATH "The directory where pkgconfig will be installed to.")
@@ -498,10 +522,18 @@ if (KDE_INSTALL_USE_QT_SYS_PATHS)
             INCLUDE_INSTALL_DIR "$$QT_MODULE_LIB_BASE/QtWebKit.framework/Headers"
             MODULE_CONFIG "lib_bundle"
         )
+        list(APPEND WebKit_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "$$QT_MODULE_LIB_BASE/QtWebKit.framework/Headers/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "$$QT_MODULE_LIB_BASE/QtWebKit.framework/Headers/${PROJECT_VERSION}/QtWebKit"
+        )
     else ()
         list(APPEND WebKit_PRI_ARGUMENTS
             INCLUDE_INSTALL_DIR "$$QT_MODULE_INCLUDE_BASE"
             INCLUDE_INSTALL_DIR2 "$$QT_MODULE_INCLUDE_BASE/QtWebKit"
+        )
+        list(APPEND WebKit_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "$$QT_MODULE_INCLUDE_BASE/QtWebKit/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "$$QT_MODULE_INCLUDE_BASE/QtWebKit/${PROJECT_VERSION}/QtWebKit"
         )
     endif ()
 else ()
@@ -513,13 +545,23 @@ else ()
             INCLUDE_INSTALL_DIR "${LIB_INSTALL_DIR}/QtWebKit.framework/Headers"
             MODULE_CONFIG "lib_bundle"
         )
+        list(APPEND WebKit_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "${LIB_INSTALL_DIR}/QtWebKit.framework/Headers/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "${LIB_INSTALL_DIR}/QtWebKit.framework/Headers/${PROJECT_VERSION}/QtWebKit"
+        )
     else ()
         list(APPEND WebKit_PRI_ARGUMENTS
             INCLUDE_INSTALL_DIR ${KDE_INSTALL_INCLUDEDIR}
             INCLUDE_INSTALL_DIR2 "${KDE_INSTALL_INCLUDEDIR}/QtWebKit"
         )
+        list(APPEND WebKit_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "${KDE_INSTALL_INCLUDEDIR}/QtWebKit/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "${KDE_INSTALL_INCLUDEDIR}/QtWebKit/${PROJECT_VERSION}/QtWebKit"
+        )
     endif ()
 endif ()
+
+list(APPEND WebKit_Private_PRI_ARGUMENTS MODULE_CONFIG "internal_module no_link")
 
 if (MACOS_BUILD_FRAMEWORKS)
     set(WebKit_OUTPUT_NAME QtWebKit)
@@ -540,7 +582,23 @@ ecm_generate_pri_file(
     FILENAME_VAR WebKit_PRI_FILENAME
     ${WebKit_PRI_ARGUMENTS}
 )
-install(FILES ${WebKit_PRI_FILENAME} DESTINATION ${ECM_MKSPECS_INSTALL_DIR} COMPONENT Data)
+ecm_generate_pri_file(
+    BASE_NAME webkit_private
+    NAME "QtWebKit"
+    LIB_NAME " "
+    DEPS "webkit"
+    RUNTIME_DEPS " "
+    DEFINES " "
+    QT_MODULES webkit
+    EXTRA_LIBS " "
+    FILENAME_VAR WebKit_Private_PRI_FILENAME
+    ${WebKit_Private_PRI_ARGUMENTS}
+)
+install(
+    FILES ${WebKit_PRI_FILENAME} ${WebKit_Private_PRI_FILENAME}
+    DESTINATION ${ECM_MKSPECS_INSTALL_DIR}
+    COMPONENT Data
+)
 
 if (QT_STATIC_BUILD)
     set(WebKit_LIBRARY_TYPE STATIC)
@@ -689,10 +747,18 @@ if (KDE_INSTALL_USE_QT_SYS_PATHS)
             INCLUDE_INSTALL_DIR "$$QT_MODULE_LIB_BASE/QtWebKitWidgets.framework/Headers"
             MODULE_CONFIG "lib_bundle"
         )
+        list(APPEND WebKitWidgets_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "$$QT_MODULE_LIB_BASE/QtWebKitWidgets.framework/Headers/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "$$QT_MODULE_LIB_BASE/QtWebKitWidgets.framework/Headers/${PROJECT_VERSION}/QtWebKitWidgets"
+        )
     else ()
         list(APPEND WebKitWidgets_PRI_ARGUMENTS
             INCLUDE_INSTALL_DIR "$$QT_MODULE_INCLUDE_BASE"
             INCLUDE_INSTALL_DIR2 "$$QT_MODULE_INCLUDE_BASE/QtWebKitWidgets"
+        )
+        list(APPEND WebKitWidgets_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "$$QT_MODULE_INCLUDE_BASE/QtWebKitWidgets/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "$$QT_MODULE_INCLUDE_BASE/QtWebKitWidgets/${PROJECT_VERSION}/QtWebKitWidgets"
         )
     endif ()
 else ()
@@ -704,13 +770,23 @@ else ()
             INCLUDE_INSTALL_DIR "${LIB_INSTALL_DIR}/QtWebKitWidgets.framework/Headers"
             MODULE_CONFIG "lib_bundle"
         )
+        list(APPEND WebKitWidgets_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "${LIB_INSTALL_DIR}/QtWebKitWidgets.framework/Headers/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "${LIB_INSTALL_DIR}/QtWebKitWidgets.framework/Headers/${PROJECT_VERSION}/QtWebKitWidgets"
+        )
     else ()
         list(APPEND WebKitWidgets_PRI_ARGUMENTS
             INCLUDE_INSTALL_DIR ${KDE_INSTALL_INCLUDEDIR}
             INCLUDE_INSTALL_DIR2 "${KDE_INSTALL_INCLUDEDIR}/QtWebKitWidgets"
         )
+        list(APPEND WebKitWidgets_Private_PRI_ARGUMENTS
+            INCLUDE_INSTALL_DIR "${KDE_INSTALL_INCLUDEDIR}/QtWebKitWidgets/${PROJECT_VERSION}"
+            INCLUDE_INSTALL_DIR2 "${KDE_INSTALL_INCLUDEDIR}/QtWebKitWidgets/${PROJECT_VERSION}/QtWebKitWidgets"
+        )
     endif ()
 endif ()
+
+list(APPEND WebKitWidgets_Private_PRI_ARGUMENTS MODULE_CONFIG "internal_module no_link")
 
 if (MACOS_BUILD_FRAMEWORKS)
     set(WebKitWidgets_OUTPUT_NAME QtWebKitWidgets)
@@ -730,7 +806,23 @@ ecm_generate_pri_file(
     FILENAME_VAR WebKitWidgets_PRI_FILENAME
     ${WebKitWidgets_PRI_ARGUMENTS}
 )
-install(FILES ${WebKitWidgets_PRI_FILENAME} DESTINATION ${ECM_MKSPECS_INSTALL_DIR} COMPONENT Data)
+ecm_generate_pri_file(
+    BASE_NAME webkitwidgets_private
+    NAME "QtWebKitWidgets"
+    LIB_NAME " "
+    DEPS "webkitwidgets"
+    RUNTIME_DEPS " "
+    DEFINES " "
+    QT_MODULES webkitwidgets
+    EXTRA_LIBS " "
+    FILENAME_VAR WebKitWidgets_Private_PRI_FILENAME
+    ${WebKitWidgets_Private_PRI_ARGUMENTS}
+)
+install(
+    FILES ${WebKitWidgets_PRI_FILENAME}  ${WebKitWidgets_Private_PRI_FILENAME}
+    DESTINATION ${ECM_MKSPECS_INSTALL_DIR}
+    COMPONENT Data
+)
 
 if (MSVC)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -762,7 +854,7 @@ install(TARGETS WebKitWidgets EXPORT Qt5WebKitWidgetsTargets
         DESTINATION "${LIB_INSTALL_DIR}"
         RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
 )
-if (MSVC)
+if (MSVC AND NOT QT_STATIC_BUILD)
     install(FILES $<TARGET_PDB_FILE:WebKitWidgets> DESTINATION "${BIN_INSTALL_DIR}" OPTIONAL)
 endif ()
 
@@ -772,7 +864,8 @@ endif ()
 
 if (MACOS_BUILD_FRAMEWORKS)
     set_target_properties(WebKitWidgets PROPERTIES
-        FRAMEWORK_VERSION 5
+        FRAMEWORK_VERSION ${PROJECT_VERSION_MAJOR}
+        SOVERSION ${MACOS_COMPATIBILITY_VERSION}
         MACOSX_FRAMEWORK_IDENTIFIER org.qt-project.QtWebKitWidgets
     )
 endif ()
@@ -790,6 +883,7 @@ if (COMPILER_IS_GCC_OR_CLANG)
     set_source_files_properties(
         qt/Api/qwebdatabase.cpp
         qt/Api/qwebelement.cpp
+        qt/Api/qwebfullscreenrequest.cpp
         qt/Api/qwebhistory.cpp
         qt/Api/qwebhistoryinterface.cpp
         qt/Api/qwebpluginfactory.cpp
@@ -799,7 +893,6 @@ if (COMPILER_IS_GCC_OR_CLANG)
 
         qt/WidgetApi/qgraphicswebview.cpp
         qt/WidgetApi/qwebframe.cpp
-        qt/WidgetApi/qwebfullscreenrequest.cpp
         qt/WidgetApi/qwebinspector.cpp
         qt/WidgetApi/qwebpage.cpp
         qt/WidgetApi/qwebview.cpp

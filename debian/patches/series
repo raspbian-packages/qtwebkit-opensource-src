@@ -1,16 +1,4 @@
 reduce_exports.diff
-detect_opengl_es2.diff
-atomic_config_test.diff
-fix_copyChars_segfault.diff
-fix_selectedHtml_segfault.diff
-fix_ftbfs_x32.diff
 path_max.diff
-fix_ftbfs_alpha.diff
-pkgconfig_description.diff
-use_system_woff2.diff
-pkgconfig_includedir.diff
-doxygen_tags.diff
-fix_trojita_plaintext.diff
-i386_fastcall.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch
