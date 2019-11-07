@@ -1,0 +1,35 @@
+#!/usr/bin/python3
+import sys
+lf=open(sys.argv[1],'rb')
+symbols=set()
+for line in lf:
+	if (b'MISSING' in line) and (b'optional' not in line):
+		symbols.add(b' '.join(line.split(b' ')[2:-1]))
+lf.close()
+
+output=[]
+sf=open(sys.argv[2],'rb')
+for line in sf:
+	linesplit = line.split(b' ')
+	if len(linesplit) >= 3:
+		linestart = linesplit[0]
+		symbol = b' '.join(linesplit[1:-1])
+		lineend = linesplit[-1]
+		if symbol in symbols:
+			if symbol[0] == ord(b'('):
+				symbol = b'|'+symbol[1:]
+			else:
+				symbol = b')'+symbol
+			symbol = b'(optional=dissapearedinraspbian'+symbol
+			line = linestart+b' '+symbol+b' '+lineend
+			#print(line)
+	output.append(line)
+
+sf.close()
+sf=open(sys.argv[2],'wb')
+for line in output:
+	sf.write(line);
+sf.close()
+
+
+
