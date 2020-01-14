@@ -59,7 +59,7 @@ def generate_bindings_for_builtins_files(builtins_files=[],
     model = BuiltinsCollection(framework_name=framework_name)
 
     for filepath in builtins_files:
-        with open(filepath, "r") as file:
+        with open(filepath, "r", encoding="UTF-8") as file:
             file_text = file.read()
             file_name = os.path.basename(filepath)
 
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         for filepath in os.listdir(arg_options.input_directory):
             input_filepaths.append(os.path.join(arg_options.input_directory, filepath))
 
-    input_filepaths = filter(lambda name: fnmatch.fnmatch(name, '*.js'), input_filepaths)
+    input_filepaths = [name for name in input_filepaths if fnmatch.fnmatch(name, '*.js')]
 
     options = {
         'output_path': arg_options.output_directory,

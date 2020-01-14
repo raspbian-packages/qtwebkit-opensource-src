@@ -123,6 +123,9 @@ class BuiltinFunction:
 
         return interface
 
+    def __lt__(self, other):
+        return self.function_name < other.function_name
+
 
 class BuiltinsCollection:
     def __init__(self, framework_name):
@@ -271,4 +274,4 @@ class BuiltinsCollection:
             functionBounds.append((start, end))
 
         functionStrings = [text[start:end].strip() for (start, end) in functionBounds]
-        return map(BuiltinFunction.fromString, functionStrings)
+        return list(map(BuiltinFunction.fromString, functionStrings))
