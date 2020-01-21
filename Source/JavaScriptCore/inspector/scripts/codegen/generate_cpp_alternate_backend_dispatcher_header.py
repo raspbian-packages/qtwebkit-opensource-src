@@ -30,9 +30,14 @@ import string
 import re
 from string import Template
 
-from cpp_generator import CppGenerator
-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
-from generator import Generator
+try:
+    from .cpp_generator import CppGenerator
+    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+    from .generator import Generator
+except ValueError:
+    from cpp_generator import CppGenerator
+    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+    from generator import Generator
 
 log = logging.getLogger('global')
 

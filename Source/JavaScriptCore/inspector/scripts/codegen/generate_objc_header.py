@@ -29,10 +29,16 @@ import logging
 import string
 from string import Template
 
-from generator import Generator, ucfirst
-from models import ObjectType, EnumType
-from objc_generator import ObjCGenerator, join_type_and_name
-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+try:
+    from .generator import Generator, ucfirst
+    from .models import ObjectType, EnumType
+    from .objc_generator import ObjCGenerator, join_type_and_name
+    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+except ValueError:
+    from generator import Generator, ucfirst
+    from models import ObjectType, EnumType
+    from objc_generator import ObjCGenerator, join_type_and_name
+    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
 
 log = logging.getLogger('global')
 
@@ -60,9 +66,9 @@ class ObjCHeaderGenerator(Generator):
         }
 
         domains = self.domains_to_generate()
-        type_domains = filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), domains)
-        command_domains = filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), domains)
-        event_domains = filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains)
+        type_domains = list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), domains))
+        command_domains = list(filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), domains))
+        event_domains = list(filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains))
 
         # FIXME: <https://webkit.org/b/138222> Web Inspector: Reduce unnecessary enums/types generated in ObjC Protocol Interfaces
         # Currently we generate enums/types for all types in the type_domains. For the built-in
@@ -156,8 +162,8 @@ class ObjCHeaderGenerator(Generator):
         objc_name = ObjCGenerator.objc_name_for_type(declaration.type)
         lines.append('__attribute__((visibility ("default")))')
         lines.append('@interface %s : %s' % (objc_name, ObjCGenerator.OBJC_JSON_OBJECT_BASE))
-        required_members = filter(lambda member: not member.is_optional, declaration.type_members)
-        optional_members = filter(lambda member: member.is_optional, declaration.type_members)
+        required_members = [member for member in declaration.type_members if not member.is_optional]
+        optional_members = [member for member in declaration.type_members if member.is_optional]
         if required_members:
             lines.append(self._generate_init_method_for_required_members(domain, declaration, required_members))
         for member in required_members:

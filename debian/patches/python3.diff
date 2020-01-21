@@ -1,0 +1,1167 @@
+Description: port the build tools to Python 3
+Origin: upstream, https://github.com/qtwebkit/qtwebkit/commit/4f3ea9b811c12171
+Last-Update: 2020-01-05
+
+--- a/Source/JavaScriptCore/Scripts/generate-js-builtins.py
++++ b/Source/JavaScriptCore/Scripts/generate-js-builtins.py
+@@ -59,7 +59,7 @@ def generate_bindings_for_builtins_files
+     model = BuiltinsCollection(framework_name=framework_name)
+ 
+     for filepath in builtins_files:
+-        with open(filepath, "r") as file:
++        with open(filepath, "r", encoding="UTF-8") as file:
+             file_text = file.read()
+             file_name = os.path.basename(filepath)
+ 
+@@ -138,7 +138,7 @@ if __name__ == '__main__':
+         for filepath in os.listdir(arg_options.input_directory):
+             input_filepaths.append(os.path.join(arg_options.input_directory, filepath))
+ 
+-    input_filepaths = filter(lambda name: fnmatch.fnmatch(name, '*.js'), input_filepaths)
++    input_filepaths = [name for name in input_filepaths if fnmatch.fnmatch(name, '*.js')]
+ 
+     options = {
+         'output_path': arg_options.output_directory,
+--- a/Source/JavaScriptCore/Scripts/cssmin.py
++++ b/Source/JavaScriptCore/Scripts/cssmin.py
+@@ -41,4 +41,10 @@ def cssminify(css):
+ 
+ if __name__ == "__main__":
+     import sys
++    if sys.version_info[0] >= 3:
++        import io
++        if sys.stdin.encoding != 'UTF-8':
++            sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='UTF-8')
++        if sys.stdout.encoding != 'UTF-8':
++            sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='UTF-8')
+     sys.stdout.write(cssminify(sys.stdin.read()))
+--- a/Source/JavaScriptCore/Scripts/jsmin.py
++++ b/Source/JavaScriptCore/Scripts/jsmin.py
+@@ -28,12 +28,14 @@ import sys
+ is_3 = sys.version_info >= (3, 0)
+ if is_3:
+     import io
++    python_text_type = str
+ else:
+     import StringIO
+     try:
+         import cStringIO
+     except ImportError:
+         cStringIO = None
++    python_text_type = basestring
+ 
+ 
+ __all__ = ['jsmin', 'JavascriptMinify']
+@@ -79,14 +81,18 @@ class JavascriptMinify(object):
+         def write(char):
+             # all of this is to support literal regular expressions.
+             # sigh
+-            if char in 'return':
++            if str(char) in 'return':
+                 self.return_buf += char
+                 self.is_return = self.return_buf == 'return'
+             self.outs.write(char)
+             if self.is_return:
+                 self.return_buf = ''
+ 
+-        read = self.ins.read
++        def read(n):
++            char = self.ins.read(n)
++            if not isinstance(char, python_text_type):
++                raise ValueError("ERROR: The script jsmin.py can only handle text input, but it received input of type %s" % type(char))
++            return char
+ 
+         space_strings = "abcdefghijklmnopqrstuvwxyz"\
+         "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$\\"
+@@ -118,8 +124,8 @@ class JavascriptMinify(object):
+                 write(previous)
+         elif not previous:
+             return
+-        elif previous >= '!':
+-            if previous in "'\"":
++        elif str(previous) >= "!":
++            if str(previous) in "'\"":
+                 in_quote = previous
+             write(previous)
+             previous_non_space = previous
+@@ -166,7 +172,7 @@ class JavascriptMinify(object):
+                     if numslashes % 2 == 0:
+                         in_quote = ''
+                         write(''.join(quote_buf))
+-            elif next1 in '\r\n':
++            elif str(next1) in '\r\n':
+                 if previous_non_space in newlineend_strings \
+                     or previous_non_space > '~':
+                     while 1:
+@@ -179,7 +185,7 @@ class JavascriptMinify(object):
+                                 or next2 > '~' or next2 == '/':
+                                 do_newline = True
+                             break
+-            elif next1 < '!' and not in_re:
++            elif str(next1) < '!' and not in_re:
+                 if (previous_non_space in space_strings \
+                     or previous_non_space > '~') \
+                     and (next2 in space_strings or next2 > '~'):
+@@ -217,14 +223,14 @@ class JavascriptMinify(object):
+                     do_newline = False
+ 
+                 write(next1)
+-                if not in_re and next1 in "'\"`":
++                if not in_re and str(next1) in "'\"`":
+                     in_quote = next1
+                     quote_buf = []
+ 
+             previous = next1
+             next1 = next2
+ 
+-            if previous >= '!':
++            if str(previous) >= '!':
+                 previous_non_space = previous
+ 
+             if previous == '\\':
+--- a/Source/JavaScriptCore/Scripts/make-js-file-arrays.py
++++ b/Source/JavaScriptCore/Scripts/make-js-file-arrays.py
+@@ -21,11 +21,13 @@
+ # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
++from __future__ import print_function
+ import io
+ import os
+ from optparse import OptionParser
+-from StringIO import StringIO
+-from jsmin import JavascriptMinify
++import sys
++from jsmin import jsmin
++is_3 = sys.version_info >= (3, 0)
+ 
+ 
+ def stringifyCodepoint(code):
+@@ -36,7 +38,7 @@ def stringifyCodepoint(code):
+ 
+ 
+ def chunk(list, chunkSize):
+-    for i in xrange(0, len(list), chunkSize):
++    for i in range(0, len(list), chunkSize):
+         yield list[i:i + chunkSize]
+ 
+ 
+@@ -46,11 +48,11 @@ def main():
+     parser.add_option('-n', '--namespace', help='Namespace to use')
+     (options, arguments) = parser.parse_args()
+     if not options.namespace:
+-        print 'Error: must provide a namespace'
++        print('Error: must provide a namespace')
+         parser.print_usage()
+         exit(-1)
+     if len(arguments) < 3:
+-        print 'Error: must provide at least 3 arguments'
++        print('Error: must provide at least 3 arguments')
+         parser.print_usage()
+         exit(-1)
+ 
+@@ -60,38 +62,47 @@ def main():
+     inputPaths = arguments[2:]
+ 
+     headerFile = open(headerPath, 'w')
+-    print >> headerFile, 'namespace {0:s} {{'.format(namespace)
++    print('namespace {0:s} {{'.format(namespace), file=headerFile)
+ 
+     sourceFile = open(sourcePath, 'w')
+-    print >> sourceFile, '#include "{0:s}"'.format(os.path.basename(headerPath))
+-    print >> sourceFile, 'namespace {0:s} {{'.format(namespace)
+-
+-    jsm = JavascriptMinify()
++    print('#include "{0:s}"'.format(os.path.basename(headerPath)), file=sourceFile)
++    print('namespace {0:s} {{'.format(namespace), file=sourceFile)
+ 
+     for inputFileName in inputPaths:
+-        inputStream = io.FileIO(inputFileName)
+-        outputStream = StringIO()
++
++        if is_3:
++            inputStream = io.open(inputFileName, encoding='utf-8')
++        else:
++            inputStream = io.FileIO(inputFileName)
++
++        data = inputStream.read()
+ 
+         if not options.no_minify:
+-            jsm.minify(inputStream, outputStream)
+-            characters = outputStream.getvalue()
++            characters = jsmin(data)
+         else:
+-            characters = inputStream.read()
++            characters = data
++
++        if is_3:
++            codepoints = bytearray(characters, encoding='utf-8')
++        else:
++            codepoints = list(map(ord, characters))
++
++        # Use the size of codepoints instead of the characters
++        # because UTF-8 characters may need more than one byte.
++        size = len(codepoints)
+ 
+-        size = len(characters)
+         variableName = os.path.splitext(os.path.basename(inputFileName))[0]
+ 
+-        print >> headerFile, 'extern const char {0:s}JavaScript[{1:d}];'.format(variableName, size)
+-        print >> sourceFile, 'const char {0:s}JavaScript[{1:d}] = {{'.format(variableName, size)
++        print('extern const char {0:s}JavaScript[{1:d}];'.format(variableName, size), file=headerFile)
++        print('const char {0:s}JavaScript[{1:d}] = {{'.format(variableName, size), file=sourceFile)
+ 
+-        codepoints = map(ord, characters)
+         for codepointChunk in chunk(codepoints, 16):
+-            print >> sourceFile, '    {0:s},'.format(','.join(map(stringifyCodepoint, codepointChunk)))
++            print('    {0:s},'.format(','.join(map(stringifyCodepoint, codepointChunk))), file=sourceFile)
+ 
+-        print >> sourceFile, '};'
++        print('};', file=sourceFile)
+ 
+-    print >> headerFile, '}} // namespace {0:s}'.format(namespace)
+-    print >> sourceFile, '}} // namespace {0:s}'.format(namespace)
++    print('}} // namespace {0:s}'.format(namespace), file=headerFile)
++    print('}} // namespace {0:s}'.format(namespace), file=sourceFile)
+ 
+ if __name__ == '__main__':
+     main()
+--- a/Source/JavaScriptCore/Scripts/builtins/__init__.py
++++ b/Source/JavaScriptCore/Scripts/builtins/__init__.py
+@@ -1,3 +1,3 @@
+ # Required for Python to search this directory for module files
+ 
+-from wkbuiltins import *
++from .wkbuiltins import *
+--- a/Source/JavaScriptCore/Scripts/builtins/builtins_model.py
++++ b/Source/JavaScriptCore/Scripts/builtins/builtins_model.py
+@@ -123,6 +123,9 @@ class BuiltinFunction:
+ 
+         return interface
+ 
++    def __lt__(self, other):
++        return self.function_name < other.function_name
++
+ 
+ class BuiltinsCollection:
+     def __init__(self, framework_name):
+@@ -271,4 +274,4 @@ class BuiltinsCollection:
+             functionBounds.append((start, end))
+ 
+         functionStrings = [text[start:end].strip() for (start, end) in functionBounds]
+-        return map(BuiltinFunction.fromString, functionStrings)
++        return list(map(BuiltinFunction.fromString, functionStrings))
+--- a/Source/JavaScriptCore/disassembler/udis86/ud_opcode.py
++++ b/Source/JavaScriptCore/disassembler/udis86/ud_opcode.py
+@@ -550,10 +550,10 @@ class UdOpcodeTables(object):
+             entries = tbl.entries()
+             for k, e in entries:
+                 if isinstance(e, UdOpcodeTable):
+-                    self.log("%s    |-<%02x> %s" % (indent, k, e))
++                    self.log("%s    |-<%02x> %s" % (indent, int(k), e))
+                     printWalk(e, indent + "    |")
+                 elif isinstance(e, UdInsnDef):
+-                    self.log("%s    |-<%02x> %s" % (indent, k, e))
++                    self.log("%s    |-<%02x> %s" % (indent, int(k), e))
+         printWalk(self.root)
+ 
+ 
+--- a/Source/JavaScriptCore/generate-bytecode-files
++++ b/Source/JavaScriptCore/generate-bytecode-files
+@@ -91,7 +91,7 @@ def openOrExit(path, mode):
+     try:
+         return open(path, mode)
+     except IOError as e:
+-        print "I/O error opening {0}, ({1}): {2}".format(path, e.errno, e.strerror)
++        print("I/O error opening {0}, ({1}): {2}".format(path, e.errno, e.strerror))
+         exit(1)
+ 
+ def hashFile(file):
+@@ -157,15 +157,15 @@ if __name__ == "__main__":
+         exit(0)
+ 
+     if bytecodeHFilename:
+-        bytecodeHFile = openOrExit(bytecodeHFilename, "wb")
++        bytecodeHFile = openOrExit(bytecodeHFilename, "w")
+ 
+     if initASMFileName:
+-        initBytecodesFile = openOrExit(initASMFileName, "wb")
++        initBytecodesFile = openOrExit(initASMFileName, "w")
+ 
+     try:
+         bytecodeSections = json.load(bytecodeFile, encoding = "utf-8")
+     except:
+-        print "Unexpected error parsing {0}: {1}".format(bytecodeJSONFile, sys.exc_info())
++        print("Unexpected error parsing {0}: {1}".format(bytecodeJSONFile, sys.exc_info()))
+ 
+     if bytecodeHFilename:
+         bytecodeHFile.write(hFileHashString)
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/__init__.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/__init__.py
+@@ -1,24 +1,24 @@
+ # Required for Python to search this directory for module files
+ 
+-from models import *
+-from generator import *
+-from cpp_generator import *
+-from objc_generator import *
++from .models import *
++from .generator import *
++from .cpp_generator import *
++from .objc_generator import *
+ 
+-from generate_cpp_alternate_backend_dispatcher_header import *
+-from generate_cpp_backend_dispatcher_header import *
+-from generate_cpp_backend_dispatcher_implementation import *
+-from generate_cpp_frontend_dispatcher_header import *
+-from generate_cpp_frontend_dispatcher_implementation import *
+-from generate_cpp_protocol_types_header import *
+-from generate_cpp_protocol_types_implementation import *
+-from generate_js_backend_commands import *
+-from generate_objc_backend_dispatcher_header import *
+-from generate_objc_backend_dispatcher_implementation import *
+-from generate_objc_configuration_header import *
+-from generate_objc_configuration_implementation import *
+-from generate_objc_conversion_helpers import *
+-from generate_objc_frontend_dispatcher_implementation import *
+-from generate_objc_header import *
+-from generate_objc_internal_header import *
+-from generate_objc_protocol_types_implementation import *
++from .generate_cpp_alternate_backend_dispatcher_header import *
++from .generate_cpp_backend_dispatcher_header import *
++from .generate_cpp_backend_dispatcher_implementation import *
++from .generate_cpp_frontend_dispatcher_header import *
++from .generate_cpp_frontend_dispatcher_implementation import *
++from .generate_cpp_protocol_types_header import *
++from .generate_cpp_protocol_types_implementation import *
++from .generate_js_backend_commands import *
++from .generate_objc_backend_dispatcher_header import *
++from .generate_objc_backend_dispatcher_implementation import *
++from .generate_objc_configuration_header import *
++from .generate_objc_configuration_implementation import *
++from .generate_objc_conversion_helpers import *
++from .generate_objc_frontend_dispatcher_implementation import *
++from .generate_objc_header import *
++from .generate_objc_internal_header import *
++from .generate_objc_protocol_types_implementation import *
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/cpp_generator.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/cpp_generator.py
+@@ -28,8 +28,12 @@ import logging
+ import os.path
+ import re
+ 
+-from generator import ucfirst
+-from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++try:
++    from .generator import ucfirst
++    from .models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++except ValueError:
++    from generator import ucfirst
++    from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
+ 
+ log = logging.getLogger('global')
+ 
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_alternate_backend_dispatcher_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_alternate_backend_dispatcher_header.py
+@@ -30,9 +30,14 @@ import string
+ import re
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator
+ 
+ log = logging.getLogger('global')
+ 
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_backend_dispatcher_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_backend_dispatcher_header.py
+@@ -30,10 +30,16 @@ import re
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import EnumType
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import EnumType
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import EnumType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -46,7 +52,7 @@ class CppBackendDispatcherHeaderGenerato
+         return "InspectorBackendDispatchers.h"
+ 
+     def domains_to_generate(self):
+-        return filter(lambda domain: len(domain.commands) > 0, Generator.domains_to_generate(self))
++        return [domain for domain in Generator.domains_to_generate(self) if len(domain.commands) > 0]
+ 
+     def generate_output(self):
+         headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_backend_dispatcher_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_backend_dispatcher_implementation.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import ObjectType, ArrayType
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import ObjectType, ArrayType
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import ObjectType, ArrayType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -45,7 +51,7 @@ class CppBackendDispatcherImplementation
+         return "InspectorBackendDispatchers.cpp"
+ 
+     def domains_to_generate(self):
+-        return filter(lambda domain: len(domain.commands) > 0, Generator.domains_to_generate(self))
++        return [domain for domain in Generator.domains_to_generate(self) if len(domain.commands) > 0]
+ 
+     def generate_output(self):
+         secondary_headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_frontend_dispatcher_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_frontend_dispatcher_header.py
+@@ -30,10 +30,16 @@ import re
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import EnumType
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import EnumType
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import EnumType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -46,7 +52,7 @@ class CppFrontendDispatcherHeaderGenerat
+         return "InspectorFrontendDispatchers.h"
+ 
+     def domains_to_generate(self):
+-        return filter(lambda domain: len(domain.events) > 0, Generator.domains_to_generate(self))
++        return [domain for domain in Generator.domains_to_generate(self) if len(domain.events) > 0]
+ 
+     def generate_output(self):
+         headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_frontend_dispatcher_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_frontend_dispatcher_implementation.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import ObjectType, ArrayType
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import ObjectType, ArrayType
++except:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import ObjectType, ArrayType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -45,7 +51,7 @@ class CppFrontendDispatcherImplementatio
+         return "InspectorFrontendDispatchers.cpp"
+ 
+     def domains_to_generate(self):
+-        return filter(lambda domain: len(domain.events) > 0, Generator.domains_to_generate(self))
++        return [domain for domain in Generator.domains_to_generate(self) if len(domain.events) > 0]
+ 
+     def generate_output(self):
+         secondary_headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_protocol_types_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_protocol_types_header.py
+@@ -30,10 +30,16 @@ import re
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import EnumType, ObjectType, PrimitiveType, AliasedType, ArrayType, Frameworks
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import EnumType, ObjectType, PrimitiveType, AliasedType, ArrayType, Frameworks
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import EnumType, ObjectType, PrimitiveType, AliasedType, ArrayType, Frameworks
+ 
+ log = logging.getLogger('global')
+ 
+@@ -80,7 +86,7 @@ class CppProtocolTypesHeaderGenerator(Ge
+             '    return getEnumConstantValue(static_cast<int>(enumValue));',
+             '}']))
+ 
+-        builder_sections = map(self._generate_builders_for_domain, domains)
++        builder_sections = list(map(self._generate_builders_for_domain, domains))
+         sections.extend(filter(lambda section: len(section) > 0, builder_sections))
+         sections.append(self._generate_forward_declarations_for_binding_traits())
+         sections.append('} // namespace Protocol')
+@@ -96,8 +102,8 @@ class CppProtocolTypesHeaderGenerator(Ge
+ 
+         for domain in domains:
+             declaration_types = [decl.type for decl in domain.type_declarations]
+-            object_types = filter(lambda _type: isinstance(_type, ObjectType), declaration_types)
+-            enum_types = filter(lambda _type: isinstance(_type, EnumType), declaration_types)
++            object_types = [_type for _type in declaration_types if isinstance(_type, ObjectType)]
++            enum_types = [_type for _type in declaration_types if isinstance(_type, EnumType)]
+             if len(object_types) + len(enum_types) == 0:
+                 continue
+ 
+@@ -122,8 +128,8 @@ class CppProtocolTypesHeaderGenerator(Ge
+ """ % '\n\n'.join(sections)
+ 
+     def _generate_typedefs(self, domains):
+-        sections = map(self._generate_typedefs_for_domain, domains)
+-        sections = filter(lambda text: len(text) > 0, sections)
++        sections = list(map(self._generate_typedefs_for_domain, domains))
++        sections = [text for text in sections if len(text) > 0]
+ 
+         if len(sections) == 0:
+             return ''
+@@ -133,8 +139,8 @@ class CppProtocolTypesHeaderGenerator(Ge
+ // End of typedefs.""" % '\n\n'.join(sections)
+ 
+     def _generate_typedefs_for_domain(self, domain):
+-        primitive_declarations = filter(lambda decl: isinstance(decl.type, AliasedType), domain.type_declarations)
+-        array_declarations = filter(lambda decl: isinstance(decl.type, ArrayType), domain.type_declarations)
++        primitive_declarations = [decl for decl in domain.type_declarations if isinstance(decl.type, AliasedType)]
++        array_declarations = [decl for decl in domain.type_declarations if isinstance(decl.type, ArrayType)]
+         if len(primitive_declarations) == 0 and len(array_declarations) == 0:
+             return ''
+ 
+@@ -170,7 +176,7 @@ class CppProtocolTypesHeaderGenerator(Ge
+             elif isinstance(type_declaration.type, ObjectType):
+                 sections.append(self._generate_class_for_object_declaration(type_declaration, domain))
+ 
+-        sections = filter(lambda section: len(section) > 0, sections)
++        sections = [section for section in sections if len(section) > 0]
+         if len(sections) == 0:
+             return ''
+ 
+@@ -184,9 +190,9 @@ class CppProtocolTypesHeaderGenerator(Ge
+         if len(type_declaration.type_members) == 0:
+             return ''
+ 
+-        enum_members = filter(lambda member: isinstance(member.type, EnumType) and member.type.is_anonymous, type_declaration.type_members)
+-        required_members = filter(lambda member: not member.is_optional, type_declaration.type_members)
+-        optional_members = filter(lambda member: member.is_optional, type_declaration.type_members)
++        enum_members = [member for member in type_declaration.type_members if isinstance(member.type, EnumType) and member.type.is_anonymous]
++        required_members = [member for member in type_declaration.type_members if not member.is_optional]
++        optional_members = [member for member in type_declaration.type_members if member.is_optional]
+         object_name = type_declaration.type_name
+ 
+         lines = []
+@@ -258,7 +264,7 @@ class CppProtocolTypesHeaderGenerator(Ge
+ 
+     def _generate_builder_state_enum(self, type_declaration):
+         lines = []
+-        required_members = filter(lambda member: not member.is_optional, type_declaration.type_members)
++        required_members = [member for member in type_declaration.type_members if not member.is_optional]
+         enum_values = []
+ 
+         lines.append('    enum {')
+@@ -323,7 +329,7 @@ class CppProtocolTypesHeaderGenerator(Ge
+         type_arguments = []
+ 
+         for domain in self.domains_to_generate():
+-            declarations_to_generate = filter(lambda decl: self.type_needs_shape_assertions(decl.type), domain.type_declarations)
++            declarations_to_generate = [decl for decl in domain.type_declarations if self.type_needs_shape_assertions(decl.type)]
+ 
+             for type_declaration in declarations_to_generate:
+                 for type_member in type_declaration.type_members:
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_protocol_types_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_cpp_protocol_types_implementation.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+-from generator import Generator, ucfirst
+-from models import AliasedType, ArrayType, EnumType, ObjectType
++try:
++    from .cpp_generator import CppGenerator
++    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from .generator import Generator, ucfirst
++    from .models import AliasedType, ArrayType, EnumType, ObjectType
++except ValueError:
++    from cpp_generator import CppGenerator
++    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
++    from generator import Generator, ucfirst
++    from models import AliasedType, ArrayType, EnumType, ObjectType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -61,8 +67,8 @@ class CppProtocolTypesImplementationGene
+         sections.append('namespace Protocol {')
+         sections.append(self._generate_enum_mapping())
+         sections.append(self._generate_open_field_names())
+-        builder_sections = map(self._generate_builders_for_domain, domains)
+-        sections.extend(filter(lambda section: len(section) > 0, builder_sections))
++        builder_sections = list(map(self._generate_builders_for_domain, domains))
++        sections.extend([section for section in builder_sections if len(section) > 0])
+         sections.append('} // namespace Protocol')
+         sections.append(Template(CppTemplates.ImplementationPostlude).substitute(None, **header_args))
+ 
+@@ -114,8 +120,8 @@ class CppProtocolTypesImplementationGene
+         return Template(CppTemplates.ProtocolObjectRuntimeCast).substitute(None, **args)
+ 
+     def _generate_assertion_for_object_declaration(self, object_declaration):
+-        required_members = filter(lambda member: not member.is_optional, object_declaration.type_members)
+-        optional_members = filter(lambda member: member.is_optional, object_declaration.type_members)
++        required_members = [member for member in object_declaration.type_members if not member.is_optional]
++        optional_members = [member for member in object_declaration.type_members if member.is_optional]
+         should_count_properties = not Generator.type_has_open_fields(object_declaration.type)
+         lines = []
+ 
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_js_backend_commands.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_js_backend_commands.py
+@@ -29,9 +29,14 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator, ucfirst
+-from generator_templates import GeneratorTemplates as Templates
+-from models import EnumType
++try:
++    from .generator import Generator, ucfirst
++    from .generator_templates import GeneratorTemplates as Templates
++    from .models import EnumType
++except ValueError:
++    from generator import Generator, ucfirst
++    from generator_templates import GeneratorTemplates as Templates
++    from models import EnumType
+ 
+ log = logging.getLogger('global')
+ 
+@@ -45,10 +50,10 @@ class JSBackendCommandsGenerator(Generat
+ 
+     def domains_to_generate(self):
+         def should_generate_domain(domain):
+-            domain_enum_types = filter(lambda declaration: isinstance(declaration.type, EnumType), domain.type_declarations)
++            domain_enum_types = [declaration for declaration in domain.type_declarations if isinstance(declaration.type, EnumType)]
+             return len(domain.commands) > 0 or len(domain.events) > 0 or len(domain_enum_types) > 0
+ 
+-        return filter(should_generate_domain, Generator.domains_to_generate(self))
++        return list(filter(should_generate_domain, Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         sections = []
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_backend_dispatcher_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_backend_dispatcher_header.py
+@@ -30,11 +30,18 @@ import string
+ import re
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from generator import Generator
+-from models import Frameworks
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .cpp_generator import CppGenerator
++    from .generator import Generator
++    from .models import Frameworks
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from cpp_generator import CppGenerator
++    from generator import Generator
++    from models import Frameworks
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -47,7 +54,7 @@ class ObjCBackendDispatcherHeaderGenerat
+         return '%sBackendDispatchers.h' % ObjCGenerator.OBJC_PREFIX
+ 
+     def domains_to_generate(self):
+-        return filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), Generator.domains_to_generate(self))
++        return list(filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_backend_dispatcher_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_backend_dispatcher_implementation.py
+@@ -30,11 +30,18 @@ import string
+ import re
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from generator import Generator
+-from models import PrimitiveType, EnumType, AliasedType, Frameworks
+-from objc_generator import ObjCTypeCategory, ObjCGenerator, join_type_and_name
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .cpp_generator import CppGenerator
++    from .generator import Generator
++    from .models import PrimitiveType, EnumType, AliasedType, Frameworks
++    from .objc_generator import ObjCTypeCategory, ObjCGenerator, join_type_and_name
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from cpp_generator import CppGenerator
++    from generator import Generator
++    from models import PrimitiveType, EnumType, AliasedType, Frameworks
++    from objc_generator import ObjCTypeCategory, ObjCGenerator, join_type_and_name
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -47,7 +54,7 @@ class ObjCConfigurationImplementationGen
+         return '%sBackendDispatchers.mm' % ObjCGenerator.OBJC_PREFIX
+ 
+     def domains_to_generate(self):
+-        return filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), Generator.domains_to_generate(self))
++        return list(filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         secondary_headers = [
+@@ -112,7 +119,7 @@ class ObjCConfigurationImplementationGen
+         if command.return_parameters:
+             lines.append('        Ref<InspectorObject> resultObject = InspectorObject::create();')
+ 
+-            required_pointer_parameters = filter(lambda parameter: not parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type), command.return_parameters)
++            required_pointer_parameters = [parameter for parameter in command.return_parameters if not parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type)]
+             for parameter in required_pointer_parameters:
+                 var_name = ObjCGenerator.identifier_to_objc_identifier(parameter.parameter_name)
+                 lines.append('        THROW_EXCEPTION_FOR_REQUIRED_PARAMETER(%s, @"%s");' % (var_name, var_name))
+@@ -120,7 +127,7 @@ class ObjCConfigurationImplementationGen
+                 if objc_array_class and objc_array_class.startswith(ObjCGenerator.OBJC_PREFIX):
+                     lines.append('        THROW_EXCEPTION_FOR_BAD_TYPE_IN_ARRAY(%s, [%s class]);' % (var_name, objc_array_class))
+ 
+-            optional_pointer_parameters = filter(lambda parameter: parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type), command.return_parameters)
++            optional_pointer_parameters = [parameter for parameter in command.return_parameters if parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type)]
+             for parameter in optional_pointer_parameters:
+                 var_name = ObjCGenerator.identifier_to_objc_identifier(parameter.parameter_name)
+                 lines.append('        THROW_EXCEPTION_FOR_BAD_OPTIONAL_PARAMETER(%s, @"%s");' % (var_name, var_name))
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_configuration_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_configuration_header.py
+@@ -29,9 +29,14 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_configuration_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_configuration_implementation.py
+@@ -29,9 +29,14 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_conversion_helpers.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_conversion_helpers.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator
+-from models import EnumType
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator
++    from .models import EnumType
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator
++    from models import EnumType
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -51,7 +57,7 @@ class ObjCConversionHelpersGenerator(Gen
+         return '%sEnumConversionHelpers.h' % ObjCGenerator.OBJC_PREFIX
+ 
+     def domains_to_generate(self):
+-        return filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self))
++        return list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         headers = [
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_frontend_dispatcher_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_frontend_dispatcher_implementation.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from cpp_generator import CppGenerator
+-from generator import Generator, ucfirst
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .cpp_generator import CppGenerator
++    from .generator import Generator, ucfirst
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from cpp_generator import CppGenerator
++    from generator import Generator, ucfirst
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -45,7 +51,7 @@ class ObjCFrontendDispatcherImplementati
+         return '%sEventDispatchers.mm' % ObjCGenerator.OBJC_PREFIX
+ 
+     def domains_to_generate(self):
+-        return filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), Generator.domains_to_generate(self))
++        return list(filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         secondary_headers = [
+@@ -100,7 +106,7 @@ class ObjCFrontendDispatcherImplementati
+         lines.append('    const FrontendRouter& router = _controller->frontendRouter();')
+         lines.append('')
+ 
+-        required_pointer_parameters = filter(lambda parameter: not parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type), event.event_parameters)
++        required_pointer_parameters = [parameter for parameter in event.event_parameters if not parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type)]
+         for parameter in required_pointer_parameters:
+             var_name = ObjCGenerator.identifier_to_objc_identifier(parameter.parameter_name)
+             lines.append('    THROW_EXCEPTION_FOR_REQUIRED_PARAMETER(%s, @"%s");' % (var_name, var_name))
+@@ -108,7 +114,7 @@ class ObjCFrontendDispatcherImplementati
+             if objc_array_class and objc_array_class.startswith(ObjCGenerator.OBJC_PREFIX):
+                 lines.append('    THROW_EXCEPTION_FOR_BAD_TYPE_IN_ARRAY(%s, [%s class]);' % (var_name, objc_array_class))
+ 
+-        optional_pointer_parameters = filter(lambda parameter: parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type), event.event_parameters)
++        optional_pointer_parameters = [parameter for parameter in event.event_parameters if parameter.is_optional and ObjCGenerator.is_type_objc_pointer_type(parameter.type)]
+         for parameter in optional_pointer_parameters:
+             var_name = ObjCGenerator.identifier_to_objc_identifier(parameter.parameter_name)
+             lines.append('    THROW_EXCEPTION_FOR_BAD_OPTIONAL_PARAMETER(%s, @"%s");' % (var_name, var_name))
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_header.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator, ucfirst
+-from models import ObjectType, EnumType
+-from objc_generator import ObjCGenerator, join_type_and_name
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator, ucfirst
++    from .models import ObjectType, EnumType
++    from .objc_generator import ObjCGenerator, join_type_and_name
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator, ucfirst
++    from models import ObjectType, EnumType
++    from objc_generator import ObjCGenerator, join_type_and_name
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -60,9 +66,9 @@ class ObjCHeaderGenerator(Generator):
+         }
+ 
+         domains = self.domains_to_generate()
+-        type_domains = filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), domains)
+-        command_domains = filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), domains)
+-        event_domains = filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains)
++        type_domains = list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), domains))
++        command_domains = list(filter(ObjCGenerator.should_generate_domain_command_handler_filter(self.model()), domains))
++        event_domains = list(filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains))
+ 
+         # FIXME: <https://webkit.org/b/138222> Web Inspector: Reduce unnecessary enums/types generated in ObjC Protocol Interfaces
+         # Currently we generate enums/types for all types in the type_domains. For the built-in
+@@ -156,8 +162,8 @@ class ObjCHeaderGenerator(Generator):
+         objc_name = ObjCGenerator.objc_name_for_type(declaration.type)
+         lines.append('__attribute__((visibility ("default")))')
+         lines.append('@interface %s : %s' % (objc_name, ObjCGenerator.OBJC_JSON_OBJECT_BASE))
+-        required_members = filter(lambda member: not member.is_optional, declaration.type_members)
+-        optional_members = filter(lambda member: member.is_optional, declaration.type_members)
++        required_members = [member for member in declaration.type_members if not member.is_optional]
++        optional_members = [member for member in declaration.type_members if member.is_optional]
+         if required_members:
+             lines.append(self._generate_init_method_for_required_members(domain, declaration, required_members))
+         for member in required_members:
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_internal_header.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_internal_header.py
+@@ -29,9 +29,14 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator, ucfirst
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator, ucfirst
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator, ucfirst
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -56,7 +61,7 @@ class ObjCInternalHeaderGenerator(Genera
+         }
+ 
+         domains = self.domains_to_generate()
+-        event_domains = filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains)
++        event_domains = list(filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains))
+ 
+         sections = []
+         sections.append(self.generate_license())
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_protocol_types_implementation.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generate_objc_protocol_types_implementation.py
+@@ -29,10 +29,16 @@ import logging
+ import string
+ from string import Template
+ 
+-from generator import Generator, ucfirst
+-from models import ObjectType
+-from objc_generator import ObjCGenerator
+-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++try:
++    from .generator import Generator, ucfirst
++    from .models import ObjectType
++    from .objc_generator import ObjCGenerator
++    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
++except ValueError:
++    from generator import Generator, ucfirst
++    from models import ObjectType
++    from objc_generator import ObjCGenerator
++    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+ 
+ log = logging.getLogger('global')
+ 
+@@ -51,7 +57,7 @@ class ObjCProtocolTypesImplementationGen
+         return '%sTypes.mm' % ObjCGenerator.OBJC_PREFIX
+ 
+     def domains_to_generate(self):
+-        return filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self))
++        return list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self)))
+ 
+     def generate_output(self):
+         secondary_headers = [
+@@ -84,7 +90,7 @@ class ObjCProtocolTypesImplementationGen
+     def generate_type_implementation(self, domain, declaration):
+         lines = []
+         lines.append('@implementation %s' % ObjCGenerator.objc_name_for_type(declaration.type))
+-        required_members = filter(lambda member: not member.is_optional, declaration.type_members)
++        required_members = [member for member in declaration.type_members if not member.is_optional]
+         if required_members:
+             lines.append('')
+             lines.append(self._generate_init_method_for_required_members(domain, declaration, required_members))
+@@ -112,7 +118,7 @@ class ObjCProtocolTypesImplementationGen
+         lines.append('        return nil;')
+         lines.append('')
+ 
+-        required_pointer_members = filter(lambda member: ObjCGenerator.is_type_objc_pointer_type(member.type), required_members)
++        required_pointer_members = [member for member in required_members if ObjCGenerator.is_type_objc_pointer_type(member.type)]
+         if required_pointer_members:
+             for member in required_pointer_members:
+                 var_name = ObjCGenerator.identifier_to_objc_identifier(member.member_name)
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/generator.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/generator.py
+@@ -29,8 +29,12 @@ import os.path
+ import re
+ from string import Template
+ 
+-from generator_templates import GeneratorTemplates as Templates
+-from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++try:
++    from .generator_templates import GeneratorTemplates as Templates
++    from .models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++except ValueError:
++    from generator_templates import GeneratorTemplates as Templates
++    from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
+ 
+ log = logging.getLogger('global')
+ 
+@@ -87,7 +91,7 @@ class Generator:
+ 
+     # These methods are overridden by subclasses.
+     def non_supplemental_domains(self):
+-        return filter(lambda domain: not domain.is_supplemental, self.model().domains)
++        return [domain for domain in self.model().domains if not domain.is_supplemental]
+ 
+     def domains_to_generate(self):
+         return self.non_supplemental_domains()
+@@ -129,7 +133,7 @@ class Generator:
+     # set of types will not be automatically regenerated on subsequent calls to
+     # Generator.types_needing_shape_assertions().
+     def calculate_types_requiring_shape_assertions(self, domains):
+-        domain_names = map(lambda domain: domain.domain_name, domains)
++        domain_names = [domain.domain_name for domain in domains]
+         log.debug("> Calculating types that need shape assertions (eligible domains: %s)" % ", ".join(domain_names))
+ 
+         # Mutates the passed-in set; this simplifies checks to prevent infinite recursion.
+@@ -185,7 +189,7 @@ class Generator:
+         for _type in all_types:
+             if not isinstance(_type, EnumType):
+                 continue
+-            map(self._assign_encoding_for_enum_value, _type.enum_values())
++            list(map(self._assign_encoding_for_enum_value, _type.enum_values()))
+ 
+     def _assign_encoding_for_enum_value(self, enum_value):
+         if enum_value in self._enum_value_encodings:
+--- a/Source/JavaScriptCore/inspector/scripts/codegen/objc_generator.py
++++ b/Source/JavaScriptCore/inspector/scripts/codegen/objc_generator.py
+@@ -24,8 +24,12 @@
+ # THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ import logging
+-from generator import Generator, ucfirst
+-from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++try:
++    from .generator import Generator, ucfirst
++    from .models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
++except ValueError:
++    from generator import Generator, ucfirst
++    from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
+ 
+ log = logging.getLogger('global')
+ 
+@@ -50,7 +54,7 @@ _OBJC_IDENTIFIER_RENAME_MAP = {
+     'id': 'identifier',  # Page.Frame.id, Runtime.ExecutionContextDescription.id, Debugger.BreakpointAction.id
+ }
+ 
+-_OBJC_IDENTIFIER_REVERSE_RENAME_MAP = dict((v, k) for k, v in _OBJC_IDENTIFIER_RENAME_MAP.iteritems())
++_OBJC_IDENTIFIER_REVERSE_RENAME_MAP = dict((v, k) for k, v in _OBJC_IDENTIFIER_RENAME_MAP.items())
+ 
+ 
+ class ObjCTypeCategory:
+--- a/Source/JavaScriptCore/inspector/scripts/generate-inspector-protocol-bindings.py
++++ b/Source/JavaScriptCore/inspector/scripts/generate-inspector-protocol-bindings.py
+@@ -48,7 +48,7 @@ try:
+ 
+ # When copying generator files to JavaScriptCore's private headers on Mac,
+ # the codegen/ module directory is flattened. So, import directly.
+-except ImportError, e:
++except ImportError as e:
+     # log.error(e) # Uncomment this to debug early import errors.
+     import models
+     from models import *
+--- a/Source/JavaScriptCore/replay/scripts/CodeGeneratorReplayInputs.py
++++ b/Source/JavaScriptCore/replay/scripts/CodeGeneratorReplayInputs.py
+@@ -598,7 +598,7 @@ class Generator:
+ 
+     def generate_header(self):
+         enums_to_generate = filter(self.should_generate_item, self._model.enum_types())
+-        inputs_to_generate = filter(self.should_generate_item, self._model.inputs)
++        inputs_to_generate = list(filter(self.should_generate_item, self._model.inputs))
+ 
+         template_arguments = {
+             'licenseBlock': self.generate_license(),
+@@ -621,7 +621,7 @@ class Generator:
+ 
+     def generate_implementation(self):
+         enums_to_generate = filter(self.should_generate_item, self._model.enum_types())
+-        inputs_to_generate = filter(self.should_generate_item, self._model.inputs)
++        inputs_to_generate = list(filter(self.should_generate_item, self._model.inputs))
+ 
+         template_arguments = {
+             'licenseBlock': self.generate_license(),
+--- a/Source/WebCore/platform/network/create-http-header-name-table
++++ b/Source/WebCore/platform/network/create-http-header-name-table
+@@ -41,7 +41,7 @@ input_file = open(input_path)
+ http_header_name_to_id = { }
+ http_header_names = []
+ 
+-for line in input_file.xreadlines():
++for line in input_file:
+     http_header_name = line.strip()
+     if not http_header_name or http_header_name[:2] == '//':
+         continue
+--- a/Source/WebInspectorUI/Scripts/copy-user-interface-resources.pl
++++ b/Source/WebInspectorUI/Scripts/copy-user-interface-resources.pl
+@@ -134,6 +134,8 @@ my $esprimaLicense = readLicenseFile(Fil
+ my $eslintLicense = readLicenseFile(File::Spec->catfile($eslintPath, 'LICENSE'));
+ make_path($protocolDir, $targetResourcePath);
+ 
++$python = $ENV{"PYTHON"} if defined($ENV{"PYTHON"});
++
+ # Copy over dynamically loaded files from other frameworks, even if we aren't combining resources.
+ copy(File::Spec->catfile($ENV{'JAVASCRIPTCORE_PRIVATE_HEADERS_DIR'}, 'InspectorBackendCommands.js'), File::Spec->catfile($protocolDir, 'InspectorBackendCommands.js')) or die "Copy of InspectorBackendCommands.js failed: $!";
+ 
+--- a/Source/cmake/WebKitCommon.cmake
++++ b/Source/cmake/WebKitCommon.cmake
+@@ -24,10 +24,8 @@ if (NOT HAS_RUN_WEBKIT_COMMON)
+     # TODO Enforce version requirement for perl
+     find_package(Perl 5.10.0 REQUIRED)
+ 
++    set(Python_ADDITIONAL_VERSIONS 3)
+     find_package(PythonInterp 2.7.0 REQUIRED)
+-    if (PYTHON_VERSION_MAJOR GREATER 2)
+-        message(FATAL_ERROR "Python 2 is required, but Python ${PYTHON_VERSION_MAJOR} was found.")
+-    endif ()
+ 
+     # We cannot check for RUBY_FOUND because it is set only when the full package is installed and
+     # the only thing we need is the interpreter. Unlike Python, cmake does not provide a macro

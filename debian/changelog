@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha3-5+rpi1) bullseye-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha3-6+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,14 @@ qtwebkit-opensource-src (5.212.0~alpha3-5+rpi1) bullseye-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Wed, 06 Nov 2019 14:21:51 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Tue, 21 Jan 2020 03:35:27 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha3-6) unstable; urgency=medium
+
+  * Port the build tools to Python 3 (closes: #938323).
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 14 Jan 2020 18:04:18 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha3-5) unstable; urgency=medium
 
