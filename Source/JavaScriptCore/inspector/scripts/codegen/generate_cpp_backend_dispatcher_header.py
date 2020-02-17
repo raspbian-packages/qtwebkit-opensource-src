@@ -30,10 +30,16 @@ import re
 import string
 from string import Template
 
-from cpp_generator import CppGenerator
-from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
-from generator import Generator, ucfirst
-from models import EnumType
+try:
+    from .cpp_generator import CppGenerator
+    from .cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+    from .generator import Generator, ucfirst
+    from .models import EnumType
+except ValueError:
+    from cpp_generator import CppGenerator
+    from cpp_generator_templates import CppGeneratorTemplates as CppTemplates
+    from generator import Generator, ucfirst
+    from models import EnumType
 
 log = logging.getLogger('global')
 
@@ -46,7 +52,7 @@ class CppBackendDispatcherHeaderGenerator(Generator):
         return "InspectorBackendDispatchers.h"
 
     def domains_to_generate(self):
-        return filter(lambda domain: len(domain.commands) > 0, Generator.domains_to_generate(self))
+        return [domain for domain in Generator.domains_to_generate(self) if len(domain.commands) > 0]
 
     def generate_output(self):
         headers = [

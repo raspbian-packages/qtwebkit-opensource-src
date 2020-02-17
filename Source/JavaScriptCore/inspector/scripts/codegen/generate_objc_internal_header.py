@@ -29,9 +29,14 @@ import logging
 import string
 from string import Template
 
-from generator import Generator, ucfirst
-from objc_generator import ObjCGenerator
-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+try:
+    from .generator import Generator, ucfirst
+    from .objc_generator import ObjCGenerator
+    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+except ValueError:
+    from generator import Generator, ucfirst
+    from objc_generator import ObjCGenerator
+    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
 
 log = logging.getLogger('global')
 
@@ -56,7 +61,7 @@ class ObjCInternalHeaderGenerator(Generator):
         }
 
         domains = self.domains_to_generate()
-        event_domains = filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains)
+        event_domains = list(filter(ObjCGenerator.should_generate_domain_event_dispatcher_filter(self.model()), domains))
 
         sections = []
         sections.append(self.generate_license())

@@ -29,10 +29,16 @@ import logging
 import string
 from string import Template
 
-from generator import Generator
-from models import EnumType
-from objc_generator import ObjCGenerator
-from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+try:
+    from .generator import Generator
+    from .models import EnumType
+    from .objc_generator import ObjCGenerator
+    from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
+except ValueError:
+    from generator import Generator
+    from models import EnumType
+    from objc_generator import ObjCGenerator
+    from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
 
 log = logging.getLogger('global')
 
@@ -51,7 +57,7 @@ class ObjCConversionHelpersGenerator(Generator):
         return '%sEnumConversionHelpers.h' % ObjCGenerator.OBJC_PREFIX
 
     def domains_to_generate(self):
-        return filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self))
+        return list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self)))
 
     def generate_output(self):
         headers = [

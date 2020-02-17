@@ -29,9 +29,14 @@ import logging
 import string
 from string import Template
 
-from generator import Generator, ucfirst
-from generator_templates import GeneratorTemplates as Templates
-from models import EnumType
+try:
+    from .generator import Generator, ucfirst
+    from .generator_templates import GeneratorTemplates as Templates
+    from .models import EnumType
+except ValueError:
+    from generator import Generator, ucfirst
+    from generator_templates import GeneratorTemplates as Templates
+    from models import EnumType
 
 log = logging.getLogger('global')
 
@@ -45,10 +50,10 @@ class JSBackendCommandsGenerator(Generator):
 
     def domains_to_generate(self):
         def should_generate_domain(domain):
-            domain_enum_types = filter(lambda declaration: isinstance(declaration.type, EnumType), domain.type_declarations)
+            domain_enum_types = [declaration for declaration in domain.type_declarations if isinstance(declaration.type, EnumType)]
             return len(domain.commands) > 0 or len(domain.events) > 0 or len(domain_enum_types) > 0
 
-        return filter(should_generate_domain, Generator.domains_to_generate(self))
+        return list(filter(should_generate_domain, Generator.domains_to_generate(self)))
 
     def generate_output(self):
         sections = []
