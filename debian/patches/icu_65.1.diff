@@ -1,0 +1,30 @@
+Description: fix build with ICU 65.1
+Origin: https://github.com/qtwebkit/qtwebkit/commit/dc02ec4080010e33
+Last-Update: 2020-02-17
+
+--- a/Source/WebCore/dom/Document.cpp
++++ b/Source/WebCore/dom/Document.cpp
+@@ -4407,12 +4407,12 @@ static bool isValidNameNonASCII(const UC
+     unsigned i = 0;
+ 
+     UChar32 c;
+-    U16_NEXT(characters, i, length, c)
++    U16_NEXT(characters, i, length, c);
+     if (!isValidNameStart(c))
+         return false;
+ 
+     while (i < length) {
+-        U16_NEXT(characters, i, length, c)
++        U16_NEXT(characters, i, length, c);
+         if (!isValidNamePart(c))
+             return false;
+     }
+@@ -4474,7 +4474,7 @@ bool Document::parseQualifiedName(const
+ 
+     for (unsigned i = 0; i < length;) {
+         UChar32 c;
+-        U16_NEXT(qualifiedName, i, length, c)
++        U16_NEXT(qualifiedName, i, length, c);
+         if (c == ':') {
+             if (sawColon) {
+                 ec = NAMESPACE_ERR;
