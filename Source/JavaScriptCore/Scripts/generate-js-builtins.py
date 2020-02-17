@@ -37,8 +37,14 @@ log = logging.getLogger('global')
 
 from lazywriter import LazyFileWriter
 
-import builtins
-from builtins import *
+from wkbuiltins import (
+    BuiltinsCollection,
+    BuiltinsCombinedHeaderGenerator,
+    BuiltinsCombinedImplementationGenerator,
+    BuiltinsSeparateHeaderGenerator,
+    BuiltinsSeparateImplementationGenerator,
+    ParseException,
+)
 
 
 def generate_bindings_for_builtins_files(builtins_files=[],
