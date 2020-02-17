@@ -1,0 +1,100 @@
+Description: rename builtins to wkbuiltins to fix name conflict on Python 3
+Origin: upstream, https://github.com/qtwebkit/qtwebkit/commit/b9c30ad3b3d04a08
+Last-Update: 2020-01-05
+
+--- a/Source/JavaScriptCore/CMakeLists.txt
++++ b/Source/JavaScriptCore/CMakeLists.txt
+@@ -883,7 +883,8 @@ set(JavaScriptCore_SCRIPTS_SOURCES_DIR "
+ set(JavaScriptCore_SCRIPTS_SOURCES_PATHS
+     ${JavaScriptCore_SCRIPTS_SOURCES_DIR}/*.pl
+     ${JavaScriptCore_SCRIPTS_SOURCES_DIR}/*.py
+-    ${JavaScriptCore_SCRIPTS_SOURCES_DIR}/builtins/builtins*.py
++    ${JavaScriptCore_SCRIPTS_SOURCES_DIR}/wkbuiltins/builtins*.py
++    ${JavaScriptCore_SCRIPTS_SOURCES_DIR}/wkbuiltins/wkbuiltins.py
+ )
+ 
+ # Force JavaScriptCore to run scripts from the same staging path as WebCore.
+@@ -1174,7 +1175,7 @@ add_custom_command(
+ # JSCBuiltins
+ 
+ set(BUILTINS_GENERATOR_SCRIPTS
+-    ${JavaScriptCore_SCRIPTS_DIR}/builtins.py
++    ${JavaScriptCore_SCRIPTS_DIR}/wkbuiltins.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_generator.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_model.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_templates.py
+--- a/Source/JavaScriptCore/DerivedSources.make
++++ b/Source/JavaScriptCore/DerivedSources.make
+@@ -66,15 +66,15 @@ all : \
+ # JavaScript builtins.
+ 
+ BUILTINS_GENERATOR_SCRIPTS = \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/__init__.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_generator.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_model.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_templates.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_generate_combined_header.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_generate_combined_implementation.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_generate_separate_header.py \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins/builtins_generate_separate_implementation.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/__init__.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/wkbuiltins.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_generator.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_model.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_templates.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_generate_combined_header.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_generate_combined_implementation.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_generate_separate_header.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins/builtins_generate_separate_implementation.py \
+     $(JavaScriptCore_SCRIPTS_DIR)/generate-js-builtins.py \
+     $(JavaScriptCore_SCRIPTS_DIR)/lazywriter.py \
+ #
+--- a/Source/JavaScriptCore/Scripts/builtins/__init__.py
++++ b/Source/JavaScriptCore/Scripts/builtins/__init__.py
+@@ -1,3 +1,3 @@
+ # Required for Python to search this directory for module files
+ 
+-from builtins import *
++from wkbuiltins import *
+--- a/Source/JavaScriptCore/Scripts/generate-js-builtins.py
++++ b/Source/JavaScriptCore/Scripts/generate-js-builtins.py
+@@ -37,8 +37,14 @@ log = logging.getLogger('global')
+ 
+ from lazywriter import LazyFileWriter
+ 
+-import builtins
+-from builtins import *
++from wkbuiltins import (
++    BuiltinsCollection,
++    BuiltinsCombinedHeaderGenerator,
++    BuiltinsCombinedImplementationGenerator,
++    BuiltinsSeparateHeaderGenerator,
++    BuiltinsSeparateImplementationGenerator,
++    ParseException,
++)
+ 
+ 
+ def generate_bindings_for_builtins_files(builtins_files=[],
+--- a/Source/WebCore/CMakeLists.txt
++++ b/Source/WebCore/CMakeLists.txt
+@@ -3671,7 +3671,7 @@ set(WebCore_BUILTINS_SOURCES
+ )
+ 
+ set(BUILTINS_GENERATOR_SCRIPTS
+-    ${JavaScriptCore_SCRIPTS_DIR}/builtins.py
++    ${JavaScriptCore_SCRIPTS_DIR}/wkbuiltins.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_generator.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_model.py
+     ${JavaScriptCore_SCRIPTS_DIR}/builtins_templates.py
+--- a/Source/WebCore/DerivedSources.make
++++ b/Source/WebCore/DerivedSources.make
+@@ -1286,7 +1286,7 @@ WebCore_BUILTINS_SOURCES = \
+ #
+ 
+ BUILTINS_GENERATOR_SCRIPTS = \
+-    $(JavaScriptCore_SCRIPTS_DIR)/builtins.py \
++    $(JavaScriptCore_SCRIPTS_DIR)/wkbuiltins.py \
+     $(JavaScriptCore_SCRIPTS_DIR)/builtins_generator.py \
+     $(JavaScriptCore_SCRIPTS_DIR)/builtins_model.py \
+     $(JavaScriptCore_SCRIPTS_DIR)/builtins_templates.py \
