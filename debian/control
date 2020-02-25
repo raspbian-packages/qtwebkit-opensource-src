@@ -42,7 +42,7 @@ Build-Depends: bison,
                ruby:native,
                xauth <!nocheck>,
                xvfb <!nocheck>
-Standards-Version: 4.4.1
+Standards-Version: 4.5.0
 Section: libs
 Homepage: https://github.com/qtwebkit/qtwebkit
 Vcs-Git: https://salsa.debian.org/qt-kde-team/qt/qt5webkit.git
