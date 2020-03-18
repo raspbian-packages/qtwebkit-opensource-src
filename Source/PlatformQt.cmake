@@ -33,8 +33,12 @@ if (USE_MINIMAL_DEBUG_INFO AND CMAKE_BUILD_TYPE STREQUAL "Debug")
         target_compile_options(gtest          PRIVATE -g0 -O1)
     endif ()
 
-    target_compile_options(WebKit            PRIVATE -g1 -O1 -fdebug-types-section)
-    target_compile_options(WebKit2           PRIVATE -g1 -O1 -fdebug-types-section)
+    target_compile_options(WebKit            PRIVATE -g1 -O1)
+    target_compile_options(WebKit2           PRIVATE -g1 -O1)
+    if (NOT APPLE)
+        target_compile_options(WebKit        PRIVATE -fdebug-types-section)
+        target_compile_options(WebKit2       PRIVATE -fdebug-types-section)
+    endif ()
 endif ()
 
 if (USE_MINIMAL_DEBUG_INFO_MSVC AND MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -47,6 +51,15 @@ if (USE_MINIMAL_DEBUG_INFO_MSVC AND MSVC AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif ()
     if (TARGET WebKitWidgets)
         target_compile_options(WebKitWidgets  PRIVATE /Zi)
+    endif ()
+endif ()
+
+if (FORCE_DEBUG_INFO)
+    if (COMPILER_IS_GCC_OR_CLANG)
+        if (NOT APPLE)
+            target_compile_options(WebKit        PRIVATE -fdebug-types-section)
+            target_compile_options(WebKit2       PRIVATE -fdebug-types-section)
+        endif ()
     endif ()
 endif ()
 
@@ -73,6 +86,29 @@ target_include_directories(WebKitWidgets INTERFACE
     $<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR}>
     $<INSTALL_INTERFACE:${KDE_INSTALL_INCLUDEDIR}/QtWebKitWidgets>
 )
+
+if (QT_ORIGIN_RPATH)
+    set(WEBKIT_SHARED_LIBRARY_TARGETS WebKit)
+
+    if (TARGET WebKitWidgets)
+        list(APPEND WEBKIT_SHARED_LIBRARY_TARGETS WebKitWidgets)
+    endif ()
+
+    if (TARGET WebKit2)
+        set(WEBKIT2_EXECUTABLES WebProcess NetworkProcess)
+        if (ENABLE_PLUGIN_PROCESS)
+            list(APPEND WEBKIT2_EXECUTABLES PluginProcess)
+        endif ()
+        if (ENABLE_DATABASE_PROCESS)
+            list(APPEND WEBKIT2_EXECUTABLES DatabaseProcess)
+        endif ()
+        set_target_properties(${WEBKIT2_EXECUTABLES} PROPERTIES INSTALL_RPATH "\$ORIGIN/../lib")
+        set_target_properties(qmlwebkitplugin PROPERTIES INSTALL_RPATH "\$ORIGIN/../../lib")
+        set_target_properties(qmlwebkitexperimentalplugin PROPERTIES INSTALL_RPATH "\$ORIGIN/../../../lib")
+    endif ()
+
+    set_target_properties(${WEBKIT_SHARED_LIBRARY_TARGETS} PROPERTIES INSTALL_RPATH "\$ORIGIN")
+endif ()
 
 set(QTWEBKIT_PACKAGE_INIT "
 macro(find_dependency_with_major_and_minor _dep _major _minor)
@@ -110,6 +146,18 @@ list(REMOVE_DUPLICATES Qt5@MODULE_NAME@_PRIVATE_INCLUDE_DIRS)
 list(REMOVE_DUPLICATES Qt5@MODULE_NAME@_DEFINITIONS)
 list(REMOVE_DUPLICATES Qt5@MODULE_NAME@_COMPILE_DEFINITIONS)
 list(REMOVE_DUPLICATES Qt5@MODULE_NAME@_EXECUTABLE_COMPILE_FLAGS)
+
+# Fixup order of configurations to match behavior of other Qt modules
+# See also https://bugreports.qt.io/browse/QTBUG-29186
+get_target_property(_configurations Qt5::@MODULE_NAME@ IMPORTED_CONFIGURATIONS)
+list(FIND _configurations RELEASE _index)
+if (\${_index} GREATER -1)
+    list(REMOVE_AT _configurations \${_index})
+    list(INSERT _configurations 0 RELEASE)
+    set_property(TARGET Qt5::@MODULE_NAME@ PROPERTY IMPORTED_CONFIGURATIONS \"\${_configurations}\")
+endif ()
+unset(_configurations)
+unset(_index)
 ")
 
 set(MODULE_NAME WebKit)
@@ -149,17 +197,18 @@ install(FILES
     COMPONENT Data
 )
 
+# We need to install separate config files for debug and release, so use "Code" component
 install(EXPORT WebKitTargets
     FILE WebKitTargets.cmake
     NAMESPACE Qt5::
     DESTINATION "${KDE_INSTALL_CMAKEPACKAGEDIR}/Qt5WebKit"
-    COMPONENT Data
+    COMPONENT Code
 )
 install(EXPORT Qt5WebKitWidgetsTargets
     FILE Qt5WebKitWidgetsTargets.cmake
     NAMESPACE Qt5::
     DESTINATION "${KDE_INSTALL_CMAKEPACKAGEDIR}/Qt5WebKitWidgets"
-    COMPONENT Data
+    COMPONENT Code
 )
 
 # Documentation

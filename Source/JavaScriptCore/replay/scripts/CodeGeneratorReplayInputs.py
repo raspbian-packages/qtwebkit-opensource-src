@@ -598,7 +598,7 @@ class Generator:
 
     def generate_header(self):
         enums_to_generate = filter(self.should_generate_item, self._model.enum_types())
-        inputs_to_generate = list(filter(self.should_generate_item, self._model.inputs))
+        inputs_to_generate = filter(self.should_generate_item, self._model.inputs)
 
         template_arguments = {
             'licenseBlock': self.generate_license(),
@@ -621,7 +621,7 @@ class Generator:
 
     def generate_implementation(self):
         enums_to_generate = filter(self.should_generate_item, self._model.enum_types())
-        inputs_to_generate = list(filter(self.should_generate_item, self._model.inputs))
+        inputs_to_generate = filter(self.should_generate_item, self._model.inputs)
 
         template_arguments = {
             'licenseBlock': self.generate_license(),

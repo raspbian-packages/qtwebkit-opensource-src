@@ -27,21 +27,12 @@
 #include <QNetworkRequest>
 #include <QUrl>
 
-// HTTP/2 is implemented since Qt 5.8, but various QtNetwork bugs make it unusable in browser with Qt < 5.10.1
-// We also don't enable HTTP/2 for unencrypted connections because of possible compatibility issues; it can be
-// enabled manually by user application via custom QNAM subclass
-#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 1)
+#if USE(HTTP2)
 #include <QSslSocket>
-#define USE_HTTP2 1
-
-// Don't enable HTTP/2 when ALPN support status is unknown
-// Before QTBUG-65903 is implemented there is no better way than to check OpenSSL version
-static bool alpnIsSupported()
-{
-    return QSslSocket::sslLibraryVersionNumber() > 0x10002000L &&
-        QSslSocket::sslLibraryVersionString().startsWith(QLatin1String("OpenSSL"));
-}
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+#include <QHttp2Configuration>
 #endif
+#endif // USE(HTTP2)
 
 namespace WebCore {
 
@@ -70,6 +61,25 @@ static inline QByteArray stringToByteArray(const String& string)
     return QString(string).toLatin1();
 }
 
+#if USE(HTTP2)
+bool ResourceRequest::alpnIsSupported()
+{
+    // Before QTBUG-65903 is implemented there is no better way than to check OpenSSL version
+    return QSslSocket::sslLibraryVersionNumber() > 0x10002000L &&
+        QSslSocket::sslLibraryVersionString().startsWith(QLatin1String("OpenSSL"));
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+static QHttp2Configuration createHttp2Configuration()
+{
+    QHttp2Configuration params;
+    params.setServerPushEnabled(true);
+    return params;
+}
+#endif
+
+#endif
+
 QNetworkRequest ResourceRequest::toNetworkRequest(NetworkingContext *context) const
 {
     QNetworkRequest request;
@@ -79,8 +89,13 @@ QNetworkRequest ResourceRequest::toNetworkRequest(NetworkingContext *context) co
 
 #if USE(HTTP2)
     static const bool NegotiateHttp2ForHttps = alpnIsSupported();
-    if (originalUrl.protocolIs("https") && NegotiateHttp2ForHttps)
+    if (originalUrl.protocolIs("https") && NegotiateHttp2ForHttps) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+        static const auto params = createHttp2Configuration();
+        request.setHttp2Configuration(params);
+#endif
         request.setAttribute(QNetworkRequest::HTTP2AllowedAttribute, true);
+    }
 #endif // USE(HTTP2)
 
     const HTTPHeaderMap &headers = httpHeaderFields();

@@ -32,12 +32,12 @@ from string import Template
 try:
     from .generator import Generator, ucfirst
     from .models import ObjectType
-    from .objc_generator import ObjCGenerator
+    from .objc_generator import ObjCTypeCategory, ObjCGenerator
     from .objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
 except ValueError:
     from generator import Generator, ucfirst
     from models import ObjectType
-    from objc_generator import ObjCGenerator
+    from objc_generator import ObjCTypeCategory, ObjCGenerator
     from objc_generator_templates import ObjCGeneratorTemplates as ObjCTemplates
 
 log = logging.getLogger('global')
@@ -75,7 +75,7 @@ class ObjCProtocolTypesImplementationGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.ImplementationPrelude).substitute(None, **header_args))
-        sections.extend(map(self.generate_type_implementations, domains))
+        sections.extend(list(map(self.generate_type_implementations, domains)))
         sections.append(Template(ObjCTemplates.ImplementationPostlude).substitute(None, **header_args))
         return '\n\n'.join(sections)
 

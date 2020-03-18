@@ -7,7 +7,7 @@ Uploaders: Timo Jyrinki <timo@debian.org>,
            Simon Quigley <tsimonq2@debian.org>
 Build-Depends: bison,
                cmake (>= 2.8.12),
-               debhelper (>= 12),
+               debhelper-compat (= 12),
                flex,
                gperf,
                libfontconfig1-dev,

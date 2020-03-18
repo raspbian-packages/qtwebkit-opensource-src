@@ -32,7 +32,7 @@ try:
     from .generator import ucfirst
     from .models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
 except ValueError:
-    from generator import ucfirst
+    from generator import ucfirst, Generator
     from models import PrimitiveType, ObjectType, ArrayType, EnumType, AliasedType, Frameworks
 
 log = logging.getLogger('global')

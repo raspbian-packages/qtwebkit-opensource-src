@@ -78,11 +78,11 @@ class ObjCHeaderGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.HeaderPrelude).substitute(None, **header_args))
-        sections.append('\n'.join(filter(None, map(self._generate_forward_declarations, type_domains))))
-        sections.append('\n'.join(filter(None, map(self._generate_enums, type_domains))))
-        sections.append('\n'.join(filter(None, map(self._generate_types, type_domains))))
-        sections.append('\n\n'.join(filter(None, map(self._generate_command_protocols, command_domains))))
-        sections.append('\n\n'.join(filter(None, map(self._generate_event_interfaces, event_domains))))
+        sections.append('\n'.join([_f for _f in map(self._generate_forward_declarations, type_domains) if _f]))
+        sections.append('\n'.join([_f for _f in map(self._generate_enums, type_domains) if _f]))
+        sections.append('\n'.join([_f for _f in map(self._generate_types, type_domains) if _f]))
+        sections.append('\n\n'.join([_f for _f in map(self._generate_command_protocols, command_domains) if _f]))
+        sections.append('\n\n'.join([_f for _f in map(self._generate_event_interfaces, event_domains) if _f]))
         sections.append(Template(ObjCTemplates.HeaderPostlude).substitute(None))
         return '\n\n'.join(sections)
 

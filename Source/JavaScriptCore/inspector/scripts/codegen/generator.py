@@ -223,7 +223,7 @@ class Generator:
             return match.group(1).upper()
 
         # Split on hyphen, introduce camelcase, and force uppercasing of acronyms.
-        subwords = map(ucfirst, enum_value.split('-'))
+        subwords = list(map(ucfirst, enum_value.split('-')))
         return re.sub(re.compile(regex, re.IGNORECASE), replaceCallback, "".join(subwords))
 
     @staticmethod

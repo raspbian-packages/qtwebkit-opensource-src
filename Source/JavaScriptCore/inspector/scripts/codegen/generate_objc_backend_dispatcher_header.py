@@ -72,7 +72,7 @@ class ObjCBackendDispatcherHeaderGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.BackendDispatcherHeaderPrelude).substitute(None, **header_args))
-        sections.extend(map(self._generate_objc_handler_declarations_for_domain, domains))
+        sections.extend(list(map(self._generate_objc_handler_declarations_for_domain, domains)))
         sections.append(Template(ObjCTemplates.BackendDispatcherHeaderPostlude).substitute(None, **header_args))
         return '\n\n'.join(sections)
 

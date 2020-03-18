@@ -72,7 +72,7 @@ class ObjCConfigurationImplementationGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.BackendDispatcherImplementationPrelude).substitute(None, **header_args))
-        sections.extend(map(self._generate_handler_implementation_for_domain, domains))
+        sections.extend(list(map(self._generate_handler_implementation_for_domain, domains)))
         sections.append(Template(ObjCTemplates.BackendDispatcherImplementationPostlude).substitute(None, **header_args))
         return '\n\n'.join(sections)
 

@@ -151,6 +151,11 @@ static inline QPainter::CompositionMode toQtCompositionMode(BlendMode op)
         return QPainter::CompositionMode_Difference;
     case BlendModeExclusion:
         return QPainter::CompositionMode_Exclusion;
+    case BlendModePlusLighter:
+        return QPainter::CompositionMode_Plus;
+    case BlendModePlusDarker:
+        // there is no exact match, but this is the closest
+        return QPainter::CompositionMode_Darken;
     case BlendModeHue:
     case BlendModeSaturation:
     case BlendModeColor:
@@ -1595,7 +1600,7 @@ void GraphicsContext::set3DTransform(const TransformationMatrix& transform)
 
 void GraphicsContext::setURLForRect(const URL& url, const IntRect& rect)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && !defined(QT_NO_PDF)
     if (paintingDisabled())
         return;
 

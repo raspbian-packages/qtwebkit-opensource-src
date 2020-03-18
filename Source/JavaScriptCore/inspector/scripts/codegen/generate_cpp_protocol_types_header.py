@@ -87,7 +87,7 @@ class CppProtocolTypesHeaderGenerator(Generator):
             '}']))
 
         builder_sections = list(map(self._generate_builders_for_domain, domains))
-        sections.extend(filter(lambda section: len(section) > 0, builder_sections))
+        sections.extend([section for section in builder_sections if len(section) > 0])
         sections.append(self._generate_forward_declarations_for_binding_traits())
         sections.append('} // namespace Protocol')
         sections.append(Template(CppTemplates.HeaderPostlude).substitute(None, **header_args))
@@ -250,7 +250,7 @@ class CppProtocolTypesHeaderGenerator(Generator):
             else:
                 return '    ' + line
 
-        indented_lines = map(apply_indentation, self._generate_struct_for_enum_type(enum_member.member_name, enum_member.type))
+        indented_lines = list(map(apply_indentation, self._generate_struct_for_enum_type(enum_member.member_name, enum_member.type)))
         return '\n'.join(indented_lines)
 
     def _generate_struct_for_enum_type(self, enum_name, enum_type):

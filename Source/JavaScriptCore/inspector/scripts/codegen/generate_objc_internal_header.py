@@ -66,7 +66,7 @@ class ObjCInternalHeaderGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.GenericHeaderPrelude).substitute(None, **header_args))
-        sections.append('\n\n'.join(filter(None, map(self._generate_event_dispatcher_private_interfaces, event_domains))))
+        sections.append('\n\n'.join([_f for _f in map(self._generate_event_dispatcher_private_interfaces, event_domains) if _f]))
         sections.append(Template(ObjCTemplates.GenericHeaderPostlude).substitute(None, **header_args))
         return '\n\n'.join(sections)
 

@@ -69,7 +69,7 @@ class CppFrontendDispatcherHeaderGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(CppTemplates.HeaderPrelude).substitute(None, **header_args))
-        sections.extend(map(self._generate_dispatcher_declarations_for_domain, self.domains_to_generate()))
+        sections.extend(list(map(self._generate_dispatcher_declarations_for_domain, self.domains_to_generate())))
         sections.append(Template(CppTemplates.HeaderPostlude).substitute(None, **header_args))
         return "\n\n".join(sections)
 

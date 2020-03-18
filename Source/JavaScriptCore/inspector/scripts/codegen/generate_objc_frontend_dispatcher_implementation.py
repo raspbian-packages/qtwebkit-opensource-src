@@ -68,7 +68,7 @@ class ObjCFrontendDispatcherImplementationGenerator(Generator):
         sections = []
         sections.append(self.generate_license())
         sections.append(Template(ObjCTemplates.ImplementationPrelude).substitute(None, **header_args))
-        sections.extend(map(self._generate_event_dispatcher_implementations, domains))
+        sections.extend(list(map(self._generate_event_dispatcher_implementations, domains)))
         sections.append(Template(ObjCTemplates.ImplementationPostlude).substitute(None, **header_args))
         return '\n\n'.join(sections)
 

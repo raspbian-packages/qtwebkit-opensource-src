@@ -57,7 +57,7 @@ class ObjCConversionHelpersGenerator(Generator):
         return '%sEnumConversionHelpers.h' % ObjCGenerator.OBJC_PREFIX
 
     def domains_to_generate(self):
-        return list(filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self)))
+        return filter(ObjCGenerator.should_generate_domain_types_filter(self.model()), Generator.domains_to_generate(self))
 
     def generate_output(self):
         headers = [

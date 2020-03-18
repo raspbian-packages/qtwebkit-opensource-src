@@ -218,7 +218,6 @@ Files: Source/WTF/config.h
        Source/WebKit2/UIProcess/qt/QtWebPageUIClient.h
        Source/WebKit2/UIProcess/qt/WebColorPickerQt.cpp
        Source/WebKit2/UIProcess/qt/WebColorPickerQt.h
-       Source/WebKit2/UIProcess/qt/WebFullScreenManagerProxyQt.cpp
        Source/WebKit2/UIProcess/qt/WebGeolocationProviderQt.cpp
        Source/WebKit2/UIProcess/qt/WebGeolocationProviderQt.h
        Source/WebKit2/WebProcess/MediaStream/*
@@ -809,11 +808,6 @@ Files: Source/ThirdParty/ANGLE/include/EGL/eglsoftlinking.h
        Source/ThirdParty/ANGLE/src/third_party/systeminfo/*
 Copyright: 2009-2014, Apple Inc
 License: BSD-2-clause
-
-Files: Source/ThirdParty/ANGLE/ANGLE.txt
-       Source/ThirdParty/ANGLE/LICENSE
-Copyright: 2002-2013, The ANGLE Project Authors
-License: BSD-3-clause
 
 Files: Source/ThirdParty/ANGLE/src/compiler/preprocessor/ExpressionParser.cpp
        Source/ThirdParty/ANGLE/src/compiler/translator/glslang_tab.cpp
@@ -2654,7 +2648,6 @@ Copyright: 2009, Adam Dingle <adam@yorba.org>
            2002-2016, Apple Inc
            2003-2015, Apple Inc. All right reserved
            2006-2010, Apple Inc. reserve
-           2003-2014, Apple Inc. reseved
            2008, Apple Ltd
            2004-2016, Apple, Inc
            2011, Brent Fulgham
@@ -2681,7 +2674,6 @@ Copyright: 2009, Adam Dingle <adam@yorba.org>
            2011, Gabor Loki <loki@webkit.org>
            2001, George Staikos <staikos@kde.org>
            2007-2014, Google Inc
-           2009, Google Inc. reseved
            2009-2012, Google, Inc
            2006, Graham Dennis <graham.dennis@gmail.com>
            2000, Gunnstein Lye <gunnstein@netcom.no>
@@ -3955,8 +3947,6 @@ Files: Source/WebKit/Storage/*
        Source/WebKit/qt/WebCoreSupport/WebDatabaseProviderQt.cpp
        Source/WebKit/qt/WidgetSupport/FullScreenVideoWidget.cpp
        Source/WebKit/qt/WidgetSupport/FullScreenVideoWidget.h
-       Source/WebKit/qt/tests/keyeddecoderqt/*
-       Source/WebKit/qt/tests/keyedencoderqt/*
        Source/WebKit/win/Plugins/PluginDatabase.cpp
        Source/WebKit/win/Plugins/PluginDatabase.h
        Source/WebKit/win/Plugins/PluginDatabaseWin.cpp
@@ -3975,6 +3965,8 @@ Files: Source/WebKit/Storage/*
        Source/WebKit/win/Plugins/PluginView.h
        Source/WebKit/win/Plugins/PluginViewWin.cpp
        Source/WebKit/win/Plugins/npapi.cpp
+       tests/webkitwidgets/keyeddecoderqt/*
+       tests/webkitwidgets/keyedencoderqt/*
 Copyright: 2011, Andreas Kling <kling@webkit.org>
            2006, Apple Computer, Inc
            2005-2015, Apple Inc

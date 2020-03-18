@@ -25,6 +25,7 @@ set(QtTestBrowser_SOURCES
     qttestbrowser.cpp
     urlloader.cpp
     utils.cpp
+    webinspector.h
     webpage.cpp
     webview.cpp
 )
@@ -44,8 +45,8 @@ set(QtTestBrowser_LIBRARIES
     ${STATIC_LIB_DEPENDENCIES}
 )
 
-qt_wrap_cpp(WebKit QtTestBrowser_SOURCES
-    webinspector.h
+qt5_add_resources(QtTestBrowser_SOURCES
+    QtTestBrowser.qrc
 )
 
 if (Qt5OpenGL_FOUND)

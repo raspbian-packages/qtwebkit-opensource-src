@@ -45,9 +45,6 @@ endif
 	dh $@ --buildsystem=cmake+ninja --with pkgkde_symbolshelper
 
 override_dh_auto_configure:
-	# Drop these lines after updating to a new release supporting Python 3
-	cd Source/JavaScriptCore/Scripts; ln -s builtins wkbuiltins
-	cd Source/JavaScriptCore/Scripts/wkbuiltins; ln -s builtins.py wkbuiltins.py
 	dh_auto_configure -- -DPORT=Qt $(EXTRA_CMAKE_ARGUMENTS)
 
 override_dh_missing:

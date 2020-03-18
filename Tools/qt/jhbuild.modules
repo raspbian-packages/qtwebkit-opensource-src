@@ -17,7 +17,6 @@
       <dep package="gst-plugins-good"/>
       <dep package="gst-plugins-bad"/>
       <dep package="gst-libav"/>
-      <dep package="openwebrtc"/>
       <dep package="qt"/>
       <if condition-set="linux">
         <dep package="llvm"/>
@@ -55,6 +54,8 @@
       href="http://mesa.freedesktop.org"/>
   <repository type="tarball" name="llvm.org"
       href="http://llvm.org"/>
+  <repository type="tarball" name="openssl"
+      href="https://ftp.openssl.org/source/"/>
 
   <autotools id="fonts" supports-non-srcdir-builds="no"
              skip-autogen="true">
@@ -75,7 +76,8 @@
     </branch>
   </autotools>
 
-  <autotools id="harfbuzz" autogen-sh="configure">
+  <autotools id="harfbuzz" autogen-sh="configure"
+             autogenargs="--with-cairo=no">
     <dependencies>
       <dep package="icu"/>
     </dependencies>
@@ -86,19 +88,9 @@
     </branch>
   </autotools>
 
-  <autotools id="libffi" autogen-sh="configure">
-    <branch module="libffi/libffi-3.1.tar.gz" version="3.1"
-             repo="sourceware.org-mirror"
-             hash="sha256:97feeeadca5e21870fa4433bc953d1b3af3f698d5df8a428f68b73cd60aef6eb"
-             md5sum="f5898b29bbfd70502831a212d9249d10"/>
-  </autotools>
-
   <autotools id="glib"
              autogen-sh="configure"
              autogenargs="--disable-dtrace --disable-gtk-doc-html">
-    <dependencies>
-      <dep package="libffi"/>
-    </dependencies>
     <branch module="/pub/GNOME/sources/glib/2.44/glib-2.44.1.tar.xz" version="2.44.1"
             repo="ftp.gnome.org"
             hash="sha256:8811deacaf8a503d0a9b701777ea079ca6a4277be10e3d730d2112735d5eca07">
@@ -107,21 +99,20 @@
     </branch>
   </autotools>
 
-  <autotools id="fontconfig" 
-             autogen-sh="configure"
-             autogenargs="--enable-libxml2">
+  <autotools id="fontconfig"
+             autogenargs="--enable-libxml2 --disable-docs"
+             supports-non-srcdir-builds="no">
+    <if condition-set="macos">
+      <autogenargs value="--with-add-fonts=/System/Library/Fonts,/Library/Fonts,~/Library/Fonts"/>
+    </if>
     <dependencies>
       <dep package="freetype6"/>
       <dep package="libxml2"/>
     </dependencies>
-    <branch module="software/fontconfig/release/fontconfig-2.11.1.tar.gz" version="2.11.1"
+    <branch module="software/fontconfig/release/fontconfig-2.12.4.tar.bz2" version="2.12.4"
             repo="freedesktop.org"
-            hash="sha256:b6b066c7dce3f436fdc0dfbae9d36122b38094f4f53bd8dffd45e195b0540d8d"
-            md5sum="e75e303b4f7756c2b16203a57ac87eba">
-      <patch file="fontconfig-2.11.1-no-bitmaps.patch" strip="0"/>
-    </branch>
+            hash="sha256:668293fcc4b3c59765cdee5cee05941091c0879edcc24dfec5455ef83912e45c"/>
   </autotools>
-
 
   <autotools id="libxml2" supports-non-srcdir-builds="no"
              autogen-sh="./autogen.sh; ./configure --without-python --without-valid --without-xinclude --without-xptr --without-c14n --without-catalog --without-regexps --without-zlib --without-lzma --without-schemas --without-schematron --without-threads --without-legacy --without-http --without-iconv --with-icu">
@@ -201,6 +192,7 @@
     </if>
     <dependencies>
       <dep package="gst-plugins-base"/>
+      <dep package="openssl"/>
     </dependencies>
     <branch module="gst-plugins-bad/gst-plugins-bad-${version}.tar.xz" version="1.8.0"
             repo="gstreamer"
@@ -221,46 +213,6 @@
             md5sum="361638fa45466c5050bcde6bfe10fa46"/>
   </autotools>
 
-  <autotools id="libusrsctp" supports-non-srcdir-builds="no" autogen-sh="./bootstrap; ./configure --disable-warnings-as-errors">
-    <branch repo="github.com" module="sctplab/usrsctp.git" checkoutdir="usrsctp" tag="078ff3252f73327e0ac11d6fd5eff62011f6646e"/>
-   </autotools>
-
-   <autotools id="gst-plugins-openwebrtc" supports-parallel-builds="no" supports-non-srcdir-builds="no" autogen-sh="./autogen.sh; ./configure">
-     <if condition-set="macos">
-       <makeargs value="CFLAGS+=-Wno-error"/>
-     </if>
-     <dependencies>
-       <dep package="gst-plugins-base"/>
-       <dep package="libusrsctp"/>
-     </dependencies>
-    <branch repo="github.com" module="EricssonResearch/openwebrtc-gst-plugins.git" checkoutdir="gst-plugins-openwebrtc" tag="e359b67484af90f416ea35e301205d2b53c77a14"/>
-   </autotools>
-
-  <autotools id="libnice" supports-non-srcdir-builds="no">
-    <dependencies>
-      <dep package="gstreamer"/>
-    </dependencies>
-    <branch repo="nice.freedesktop.org" module="releases/libnice-0.1.10.tar.gz" checkoutdir="libnice" version="0.1.10"
-            hash="sha256:1dbfb663b730889ae8cab13a2913fe557d581f70b513c918bbbd0b7d3eefebc9"
-            md5sum="27b62d0093ce29a39df1c6fcf0bb4396" size="903083">
-    </branch>
-  </autotools>
-
-  <autotools id="openwebrtc" autogenargs="--enable-bridge=no --enable-owr-gst=yes --disable-tests">
-     <if condition-set="macos">
-       <makeargs value="CFLAGS+=-Wno-error"/>
-     </if>
-    <dependencies>
-      <dep package="gst-plugins-openwebrtc"/>
-      <dep package="libnice"/>
-     </dependencies>
-    <branch repo="github.com-tarball" module="EricssonResearch/openwebrtc/archive/13516c7f79a0c48bb411464f7613d4b426c70f5b.tar.gz" checkoutdir="openwebrtc" version="13516c7f79a0c48bb411464f7613d4b426c70f5b"
-            hash="sha256:c849d36d97c17a198a5d9c180f13f14c7897c9236e2384ea11029e23b09b59ac"
-            md5sum="13516c7f79a0c48bb411464f7613d4b426c70f5b.tar.gz" size="258936">
-      <patch file="openwebrtc-no-gtk-doc.patch" strip="1"/>
-    </branch>
-  </autotools>
-
   <autotools id="icu"
              autogen-sh="./source/configure"
              autogenargs="--disable-samples --enable-weak-threads">
@@ -275,7 +227,9 @@
              autogenargs="--enable-optimized --disable-terminfo --disable-zlib --enable-targets=host --disable-backtraces --disable-crash-overrides --disable-expensive-checks --disable-debug-runtime --disable-assertions --enable-shared --enable-bindings=none">
     <branch repo="llvm.org"
             module="/releases/3.7.0/llvm-3.7.0.src.tar.xz" version="3.7.0" checkoutdir="llvm-3.7.0"
-            hash="sha256:ab45895f9dcdad1e140a3a79fd709f64b05ad7364e308c0e582c5b02e9cc3153"/>
+            hash="sha256:ab45895f9dcdad1e140a3a79fd709f64b05ad7364e308c0e582c5b02e9cc3153">
+      <patch file="LLVM-fix-for-new-gcc.patch" strip="1"/>
+    </branch>
   </autotools>
 
   <autotools id="mesa" autogenargs="--enable-xlib-glx --disable-dri --disable-egl --with-gallium-drivers=swrast" skip-install="true">
@@ -289,6 +243,14 @@
     <dependencies>
       <dep package="llvm"/>
     </dependencies>
+  </autotools>
+
+  <autotools id="openssl" autogenargs="" autogen-sh="./Configure" supports-non-srcdir-builds="no"
+             autogen-template="%(srcdir)s/%(autogen-sh)s shared --prefix=%(prefix)s --libdir=lib --openssldir=%(prefix)s enable-unit-test no-ssl3-method enable-rfc3779 enable-cms linux-x86_64"
+             makeinstallargs="install INSTALL_PREFIX='$(DESTDIR)'">
+    <branch repo="openssl"
+            module="old/1.0.2/openssl-1.0.2r.tar.gz" version="1.0.2r" checkoutdir="openssl-1.0.2r"
+            hash="sha256:ae51d08bba8a83958e894946f15303ff894d75c2b8bbd44a852b64e3fe11d0d6"/>
   </autotools>
 
 </moduleset>

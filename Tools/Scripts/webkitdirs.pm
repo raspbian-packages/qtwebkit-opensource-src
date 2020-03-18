@@ -1910,6 +1910,11 @@ sub wrapperPrefixIfNeeded()
     return ();
 }
 
+sub shouldUseJhbuild()
+{
+    return ((isGtk() or isQt()) and -e getJhbuildPath());
+}
+
 sub cmakeCachePath()
 {
     return File::Spec->catdir(baseProductDir(), configuration(), "CMakeCache.txt");
@@ -2141,6 +2146,13 @@ sub buildCMakeProjectOrExit($$$@)
     exit($returnCode) if $returnCode;
 
     $returnCode = exitStatus(buildCMakeGeneratedProject($makeArgs));
+    exit($returnCode) if $returnCode;
+    return 0;
+}
+
+sub installCMakeProjectOrExit
+{
+    my $returnCode = exitStatus(system(qw(cmake -P cmake_install.cmake)));
     exit($returnCode) if $returnCode;
     return 0;
 }
