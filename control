@@ -1,0 +1,87 @@
+Source: qtwebkit-opensource-src
+Priority: optional
+Maintainer: Debian Qt/KDE Maintainers <debian-qt-kde@lists.debian.org>
+Uploaders: Timo Jyrinki <timo@debian.org>,
+           Lisandro Damián Nicanor Pérez Meyer <lisandro@debian.org>,
+           Dmitry Shachnev <mitya57@debian.org>,
+           Simon Quigley <tsimonq2@debian.org>
+Build-Depends: bison,
+               cmake (>= 2.8.12),
+               debhelper-compat (= 12),
+               flex,
+               gperf,
+               libfontconfig1-dev,
+               libgl1-mesa-dev [!armel !armhf] | libgl-dev [!armel !armhf],
+               libgles2-mesa-dev [armel armhf] | libgles2-dev [armel armhf],
+               libglib2.0-dev,
+               libglu1-mesa-dev [!armel !armhf] | libglu-dev [!armel !armhf],
+               libgstreamer-plugins-base1.0-dev,
+               libgstreamer1.0-dev,
+               libhyphen-dev,
+               libicu-dev,
+               libjpeg-dev,
+               libpng-dev,
+               libqt5opengl5-dev (>= 5.14.2+dfsg~),
+               libqt5sensors5-dev (>= 5.14.2~),
+               libqt5webchannel5-dev (>= 5.14.2~),
+               libsqlite3-dev,
+               libwebp-dev,
+               libwoff-dev,
+               libxcomposite-dev,
+               libxml2-dev,
+               libxrender-dev,
+               libxslt1-dev,
+               mesa-common-dev,
+               ninja-build,
+               pkg-config,
+               pkg-kde-tools (>= 0.6.4),
+               python3:native,
+               qtbase5-private-dev (>= 5.14.2+dfsg~),
+               qtdeclarative5-private-dev (>= 5.14.2+dfsg~),
+               qtpositioning5-dev (>= 5.14.2+dfsg~),
+               ruby:native,
+               xauth <!nocheck>,
+               xvfb <!nocheck>
+Standards-Version: 4.5.0
+Section: libs
+Homepage: https://github.com/qtwebkit/qtwebkit
+Vcs-Git: https://salsa.debian.org/qt-kde-team/qt/qt5webkit.git
+Vcs-Browser: https://salsa.debian.org/qt-kde-team/qt/qt5webkit
+
+Package: libqt5webkit5-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Pre-Depends: dpkg (>= 1.15.6~)
+Depends: libqt5webkit5 (= ${binary:Version}),
+         qtbase5-dev,
+         qtdeclarative5-dev,
+         ${misc:Depends}
+Description: Web content engine library for Qt - development files
+ QtWebKit provides a Web browser engine that makes it easy to embed content
+ from the World Wide Web into your Qt application.
+ .
+ This package contains the development files needed to build Qt 5 applications
+ using QtWebKit library.
+
+Package: libqt5webkit5
+Architecture: any
+Multi-Arch: same
+Pre-Depends: dpkg (>= 1.15.6~), ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Web content engine library for Qt
+ QtWebKit provides a Web browser engine that makes it easy to embed content
+ from the World Wide Web into your Qt application.
+ .
+ This package contains the QtWebKit libraries.
+
+Package: qml-module-qtwebkit
+Architecture: any
+Multi-Arch: same
+Pre-Depends: dpkg (>= 1.15.6~), ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Qt WebKit QML module
+ QtWebKit provides a Web browser engine that makes it easy to embed content
+ from the World Wide Web into your Qt application.
+ .
+ This package contains the WebKit QML module for QtDeclarative.
