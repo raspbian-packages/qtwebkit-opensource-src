@@ -2413,6 +2413,8 @@ libQt5WebKitWidgets.so.5 libqt5webkit5 #MINVER#
  (optional=linker)Qt_5.10@Qt_5.10 5.212.0~alpha2
  (optional=linker)Qt_5.11@Qt_5.11 5.212.0~alpha2
  (optional=linker)Qt_5.12@Qt_5.12 5.212.0~alpha3
+ (optional=linker)Qt_5.13@Qt_5.13 5.212.0~alpha3
+ (optional=linker)Qt_5.14@Qt_5.14 5.212.0~alpha3
  (optional=linker)Qt_5.1@Qt_5.1 5.6.1
  (optional=linker)Qt_5.2@Qt_5.2 5.6.1
  (optional=linker)Qt_5.3@Qt_5.3 5.6.1

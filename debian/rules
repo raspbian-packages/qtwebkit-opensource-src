@@ -12,7 +12,7 @@ export DEB_CPPFLAGS_MAINT_APPEND = -DNDEBUG
 export DEB_CXXFLAGS_MAINT_STRIP = -g
 export DEB_CXXFLAGS_MAINT_APPEND = -g1
 
-# See https://github.com/annulen/webkit/issues/626
+# See https://github.com/qtwebkit/qtwebkit/issues/626
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),mips mipsel))
 	export DEB_CXXFLAGS_MAINT_APPEND += -mfp32
 endif
@@ -36,9 +36,14 @@ endif
 	EXTRA_CMAKE_ARGUMENTS += -DENABLE_JIT=OFF
 #endif
 
-# Copied from Fedora; see also https://github.com/annulen/webkit/issues/480
+# Copied from Fedora; see also https://github.com/qtwebkit/qtwebkit/issues/480
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))
 	EXTRA_CMAKE_ARGUMENTS += -DUSE_SYSTEM_MALLOC=ON
+endif
+
+# webkit2gtk does a similar thing, see their prefer-pthread.patch
+ifeq ($(DEB_HOST_ARCH),riscv64)
+	EXTRA_CMAKE_ARGUMENTS += -DTHREADS_PREFER_PTHREAD_FLAG=ON
 endif
 
 %:

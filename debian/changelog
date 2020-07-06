@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-1+rpi1) bullseye-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-4+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,26 @@ qtwebkit-opensource-src (5.212.0~alpha4-1+rpi1) bullseye-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Wed, 18 Mar 2020 10:16:42 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Mon, 06 Jul 2020 12:36:39 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-4) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 24 Jun 2020 12:10:47 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-3) experimental; urgency=medium
+
+  * Bump Qt build-dependencies to 5.14.2.
+  * Add support for riscv64, based on a patch by William Grant.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 28 Apr 2020 23:22:16 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-2) experimental; urgency=medium
+
+  * Merge 5.212.0~alpha4-1 unstable upload into experimental branch.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 13 Mar 2020 13:25:50 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-1) unstable; urgency=medium
 
@@ -23,6 +42,15 @@ qtwebkit-opensource-src (5.212.0~alpha4-1) unstable; urgency=medium
   * Switch to debhelper-compat as a build-dependency.
 
  -- Dmitry Shachnev <mitya57@debian.org>  Thu, 12 Mar 2020 16:11:29 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha3-8) experimental; urgency=medium
+
+  * Build against Qt 5.14.1.
+  * Use debhelper-compat instead of debian/compat.
+  * Add Qt_5.13 and Qt_5.14 tags to debian/libqt5webkit5.symbols.
+  * debian/rules: Update issues links to the new GitHub project.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 27 Feb 2020 13:09:30 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha3-7) unstable; urgency=medium
 
