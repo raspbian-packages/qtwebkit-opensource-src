@@ -52,9 +52,6 @@ endif
 override_dh_auto_configure:
 	dh_auto_configure -- -DPORT=Qt $(EXTRA_CMAKE_ARGUMENTS)
 
-override_dh_missing:
-	dh_missing --fail-missing
-
 override_dh_auto_test:
 ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	-cd obj-$(DEB_HOST_GNU_TYPE); \

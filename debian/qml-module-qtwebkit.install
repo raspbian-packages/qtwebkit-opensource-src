@@ -1,5 +1,5 @@
-usr/lib/*/qt5/qml/QtWebKit/experimental/libqmlwebkitexperimentalplugin.so
-usr/lib/*/qt5/qml/QtWebKit/experimental/qmldir
-usr/lib/*/qt5/qml/QtWebKit/libqmlwebkitplugin.so
-usr/lib/*/qt5/qml/QtWebKit/plugins.qmltypes
-usr/lib/*/qt5/qml/QtWebKit/qmldir
+usr/lib/${DEB_HOST_MULTIARCH}/qt5/qml/QtWebKit/experimental/libqmlwebkitexperimentalplugin.so
+usr/lib/${DEB_HOST_MULTIARCH}/qt5/qml/QtWebKit/experimental/qmldir
+usr/lib/${DEB_HOST_MULTIARCH}/qt5/qml/QtWebKit/libqmlwebkitplugin.so
+usr/lib/${DEB_HOST_MULTIARCH}/qt5/qml/QtWebKit/plugins.qmltypes
+usr/lib/${DEB_HOST_MULTIARCH}/qt5/qml/QtWebKit/qmldir

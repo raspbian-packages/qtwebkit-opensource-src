@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-5+rpi1) bullseye-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-7+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,25 @@ qtwebkit-opensource-src (5.212.0~alpha4-5+rpi1) bullseye-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Thu, 13 Aug 2020 12:42:52 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Mon, 09 Nov 2020 14:21:32 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-7) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 28 Oct 2020 21:52:59 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-6) experimental; urgency=medium
+
+  * Update to debhelper compat level 13.
+    - Drop dh_missing override, --fail-missing is now default behavior.
+    - Use ${DEB_HOST_MULTIARCH} substitution.
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+  * Add upstream patch to not attempt rendering PDF with Qt image plugin.
+  * Build against Qt 5.15.1.
+  * Add Qt_5.15 tag to debian/libqt5webkit5.symbols.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 14 Sep 2020 10:21:11 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-5) unstable; urgency=medium
 
