@@ -764,14 +764,6 @@ Files: Source/JavaScriptCore/Scripts/jsmin.py
 Copyright: 2013, Dave St.Germain
 License: Expat
 
-Files: Source/JavaScriptCore/icu/*
-       Source/WTF/icu/*
-       Source/WebCore/icu/*
-Copyright: 2001-2007, Google Inc
-           2001-2011, IBM and others
-           1996-2013, International Business Machines Corporation
-License: MIT-like-icu
-
 Files: Source/JavaScriptCore/runtime/JSDateMath.cpp
        Source/JavaScriptCore/runtime/JSDateMath.h
        Source/WTF/wtf/DateMath.cpp
@@ -994,6 +986,14 @@ Copyright: 2010-2011, Adam Barth
            2010, Zoltan Herczeg <zherczeg@webkit.org>
            2012, Zoltan Horvath (zoltan@webkit.org) 2012 University of Szeged
 License: BSD-2-clause
+
+Files: Source/JavaScriptCore/icu/*
+       Source/WTF/icu/*
+       Source/WebCore/icu/*
+Copyright: 2001-2007, Google Inc
+           2001-2011, IBM and others
+           1996-2013, International Business Machines Corporation
+License: MIT-like-icu
 
 Files: Source/WebCore/Modules/battery/*
        Source/WebCore/Modules/gamepad/deprecated/NavigatorGamepad.idl

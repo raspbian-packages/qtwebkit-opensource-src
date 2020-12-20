@@ -3,5 +3,6 @@ path_max.diff
 support_riscv64.diff
 bison_3.7.diff
 no_pdf_image_plugin.diff
+python_3.9.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch

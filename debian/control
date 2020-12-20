@@ -21,9 +21,9 @@ Build-Depends: bison,
                libicu-dev,
                libjpeg-dev,
                libpng-dev,
-               libqt5opengl5-dev (>= 5.15.1+dfsg~),
-               libqt5sensors5-dev (>= 5.15.1~),
-               libqt5webchannel5-dev (>= 5.15.1~),
+               libqt5opengl5-dev (>= 5.15.2+dfsg~),
+               libqt5sensors5-dev (>= 5.15.2~),
+               libqt5webchannel5-dev (>= 5.15.2~),
                libsqlite3-dev,
                libwebp-dev,
                libwoff-dev,
@@ -36,13 +36,13 @@ Build-Depends: bison,
                pkg-config,
                pkg-kde-tools (>= 0.6.4),
                python3:native,
-               qtbase5-private-dev (>= 5.15.1+dfsg~),
-               qtdeclarative5-private-dev (>= 5.15.1+dfsg~),
-               qtpositioning5-dev (>= 5.15.1+dfsg~),
+               qtbase5-private-dev (>= 5.15.2+dfsg~),
+               qtdeclarative5-private-dev (>= 5.15.2+dfsg~),
+               qtpositioning5-dev (>= 5.15.2+dfsg~),
                ruby:native,
                xauth <!nocheck>,
                xvfb <!nocheck>
-Standards-Version: 4.5.0
+Standards-Version: 4.5.1
 Section: libs
 Homepage: https://github.com/qtwebkit/qtwebkit
 Vcs-Git: https://salsa.debian.org/qt-kde-team/qt/qt5webkit.git
