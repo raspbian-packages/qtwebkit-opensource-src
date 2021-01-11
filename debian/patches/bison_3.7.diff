@@ -5,7 +5,7 @@ Description: let Bison generate the header directly
  Remove the code to add #ifdef guards to the header, since Bison adds
  them itself since version 2.6.3.
 Author: Dmitry Shachnev <mitya57@debian.org>
-Forwarded: not-yet
+Forwarded: https://github.com/qtwebkit/qtwebkit/pull/1012
 Last-Update: 2020-08-04
 
 --- a/Source/WebCore/css/makegrammar.pl

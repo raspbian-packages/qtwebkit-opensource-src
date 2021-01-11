@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-10+rpi1) bullseye-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-11+rpi1) bullseye-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,15 @@ qtwebkit-opensource-src (5.212.0~alpha4-10+rpi1) bullseye-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Sun, 20 Dec 2020 12:42:32 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Mon, 11 Jan 2021 00:06:11 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-11) unstable; urgency=medium
+
+  * Remove unused mesa-common-dev build-dependency.
+    Thanks to Helmut Grohne for the suggestion!
+  * Update Forwarded status of debian/patches/bison_3.7.diff.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 04 Jan 2021 21:09:41 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-10) unstable; urgency=medium
 
