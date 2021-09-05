@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-11+rpi1) bullseye-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-13+rpi1) bookworm-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,22 @@ qtwebkit-opensource-src (5.212.0~alpha4-11+rpi1) bullseye-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Mon, 11 Jan 2021 00:06:11 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Sun, 05 Sep 2021 21:14:25 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-13) unstable; urgency=medium
+
+  * Bump Standards-Version to 4.6.0, no changes needed.
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sat, 28 Aug 2021 20:44:39 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-12) experimental; urgency=medium
+
+  * Add a patch from openSUSE to fix build with GLib ≥ 2.68.
+    Thanks to Fabian Vogt!
+  * Update debian/libqt5webkit5.symbols for hppa.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 07 Apr 2021 20:31:19 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-11) unstable; urgency=medium
 
