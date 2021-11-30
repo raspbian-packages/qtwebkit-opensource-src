@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-13+rpi1) bookworm-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-14+rpi1) bookworm-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,17 @@ qtwebkit-opensource-src (5.212.0~alpha4-13+rpi1) bookworm-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Sun, 05 Sep 2021 21:14:25 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Tue, 30 Nov 2021 18:52:00 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-14) unstable; urgency=medium
+
+  * debian/patches/jscore_big_endian.diff: Fix segmentation fault on s390x
+    and potentially other 64-bit big endian systems (LP: #1951470).
+    Thanks Andreas Krebbel for the patch and Frank Heimes for the initial
+    debdiff!
+  * Update debian/source/lintian-overrides for Lintian 2.109.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 24 Nov 2021 22:27:08 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-13) unstable; urgency=medium
 
