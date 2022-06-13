@@ -706,6 +706,7 @@ if (COMPILER_IS_GCC_OR_CLANG AND UNIX)
     if (NOT SHARED_CORE)
         set(CMAKE_C_FLAGS "-fvisibility=hidden ${CMAKE_C_FLAGS}")
         set(CMAKE_CXX_FLAGS "-fvisibility=hidden -fvisibility-inlines-hidden ${CMAKE_CXX_FLAGS}")
+        add_definitions(-DJS_NO_EXPORT)
     endif ()
 endif ()
 
