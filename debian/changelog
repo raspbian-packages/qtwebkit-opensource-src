@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-19+rpi1) bookworm-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-21+rpi1) bookworm-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,19 @@ qtwebkit-opensource-src (5.212.0~alpha4-19+rpi1) bookworm-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 24 Jun 2022 20:23:15 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Fri, 05 Aug 2022 11:34:36 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-21) unstable; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 26 Jul 2022 11:39:04 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-20) unstable; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols for GCC 12 (closes: #1013027).
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Mon, 25 Jul 2022 00:02:49 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-19) unstable; urgency=medium
 
