@@ -7,7 +7,7 @@ qtwebkit-opensource-src (5.212.0~alpha4-21+rpi1) bookworm-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 05 Aug 2022 11:34:36 +0000
+ -- Peter Michael Green <plugwash@raspbian.org>  Sun, 07 Aug 2022 03:05:36 +0000
 
 qtwebkit-opensource-src (5.212.0~alpha4-21) unstable; urgency=medium
 

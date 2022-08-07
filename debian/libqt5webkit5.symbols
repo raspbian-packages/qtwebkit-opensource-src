@@ -4736,7 +4736,7 @@ libQt5WebKitWidgets.so.5 libqt5webkit5 #MINVER#
  (arch=riscv64)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIS0_ELN9__gnu_cxx12_Lock_policyE1EE@Qt_5 5.212.0~alpha4
  (optional=dissapearedinraspbian|arch=!armel !ppc64el !s390x)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIS0_ELN9__gnu_cxx12_Lock_policyE2EE@Qt_5 5.212.0~alpha3
  (arch=armel)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIvELN9__gnu_cxx12_Lock_policyE1EE@Qt_5 5.212.0~alpha4
- (arch=!alpha !armel !ppc64el !riscv64 !s390x)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIvELN9__gnu_cxx12_Lock_policyE2EE@Qt_5 5.212.0~alpha4
+ (optional=dissapearedinraspbian)_ZTVSt23_Sp_counted_ptr_inplaceISt5mutexSaIvELN9__gnu_cxx12_Lock_policyE2EE@Qt_5 5.212.0~alpha4
  (optional=dissapearedinraspbian|arch=!ppc64el !s390x)_ZZNSt19_Sp_make_shared_tag5_S_tiEvE5__tag@Qt_5 5.212.0~alpha3
  (optional=templinst)_ZZNSt8__detail18__to_chars_10_implIjEEvPcjT_E8__digits@Qt_5 5.212.0~alpha4
  (optional=templinst|arch=!ppc64el !s390x)_ZZNSt9once_flag18_Prepare_executionC4IZSt9call_onceIZN7bmalloc16PerThreadStorageINS3_5CacheEE4initEPvPFvS7_EEUlvE_JEEvRS_OT_DpOT0_EUlvE_EERSC_ENUlvE_4_FUNEv@Qt_5 5.212.0~alpha4
