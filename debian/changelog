@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-21+rpi1) bookworm-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-25+rpi1) bookworm-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,33 @@ qtwebkit-opensource-src (5.212.0~alpha4-21+rpi1) bookworm-staging; urgency=mediu
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Peter Michael Green <plugwash@raspbian.org>  Sun, 07 Aug 2022 03:05:36 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Sun, 06 Nov 2022 14:39:32 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-25) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 29 Sep 2022 11:55:50 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-24) experimental; urgency=medium
+
+  * Build against Qt 5.15.6.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Tue, 13 Sep 2022 13:46:15 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-23) experimental; urgency=medium
+
+  * Update debian/libqt5webkit5.symbols for riscv64.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Sun, 07 Aug 2022 16:17:19 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-22) experimental; urgency=medium
+
+  * Build against Qt 5.15.5.
+  * Update debian/libqt5webkit5.symbols from hppa and s390x logs.
+  * Update debian/source/lintian-overrides for Lintian pointed hints.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 27 Jul 2022 11:52:18 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-21) unstable; urgency=medium
 
