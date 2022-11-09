@@ -42,8 +42,10 @@ ifneq (,$(filter $(DEB_HOST_ARCH_CPU),ppc64el s390x))
 endif
 
 # webkit2gtk does a similar thing, see their prefer-pthread.patch
+# since glibc 2.34, the THREADS_PREFER_PTHREAD_FLAG flag in CMake does not work
+# to link atomic
 ifeq ($(DEB_HOST_ARCH),riscv64)
-	EXTRA_CMAKE_ARGUMENTS += -DTHREADS_PREFER_PTHREAD_FLAG=ON
+	export DEB_LDFLAGS_MAINT_APPEND += -Wl,--no-as-needed -latomic -Wl,--as-needed
 endif
 
 %:
