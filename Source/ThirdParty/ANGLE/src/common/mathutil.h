@@ -15,6 +15,7 @@
 #include <limits>
 #include <algorithm>
 #include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 namespace gl
