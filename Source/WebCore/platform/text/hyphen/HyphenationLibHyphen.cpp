@@ -45,6 +45,10 @@
 #include <wtf/glib/GUniquePtr.h>
 #endif
 
+#if !defined(PATH_MAX)
+#define PATH_MAX 4096
+#endif
+
 namespace WebCore {
 
 static const char* const gDictionaryDirectories[] = {
