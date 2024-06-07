@@ -103,6 +103,11 @@
 #define USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
 #endif /* MIPS */
 
+/* CPU(LOONGARCH64) - LoongArch 64-bit */
+#if defined(__loongarch64)
+#define WTF_CPU_LOONGARCH64 1
+#endif
+
 /* CPU(PPC64) - PowerPC 64-bit Big Endian */
 #if (  defined(__ppc64__)      \
     || defined(__PPC64__))     \
@@ -711,6 +716,7 @@
     || CPU(ARM64) \
     || CPU(S390X) \
     || CPU(MIPS64) \
+    || CPU(LOONGARCH64) \
     || CPU(PPC64) \
     || CPU(PPC64LE) \
     || CPU(RISCV64)
@@ -1129,6 +1135,13 @@
 
 #if PLATFORM(IOS) || (PLATFORM(MAC) && __MAC_OS_X_VERSION_MIN_REQUIRED > 101000)
 #define ENABLE_PLATFORM_FONT_LOOKUP 1
+#endif
+
+/* FIXME: This does not belong in Platform.h and should instead be included in another mechanism (compiler option, prefix header, config.h, etc) */
+/* ICU configuration. Some of these match ICU defaults on some platforms, but we would like them consistently set everywhere we build WebKit. */
+#define U_SHOW_CPLUSPLUS_API 0
+#ifdef __cplusplus
+#define UCHAR_TYPE char16_t
 #endif
 
 #if COMPILER(MSVC)
