@@ -2020,7 +2020,7 @@ macro loadWithStructureCheck(operand, slowPath)
 end
 
 macro getProperty(slow)
-    loadisFromInstruction(6, t1)
+    loadpFromInstruction(6, t1)
     loadPropertyAtVariableOffset(t1, t0, t2, slow)
     valueProfile(t2, 7, t0)
     loadisFromInstruction(1, t0)
