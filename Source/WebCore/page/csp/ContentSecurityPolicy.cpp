@@ -231,8 +231,9 @@ bool isAllowedByAllWithHashFromContent(const CSPDirectiveListVector& policies, c
         auto cryptoDigest = CryptoDigest::create(toCryptoDigestAlgorithm(algorithm));
         cryptoDigest->addBytes(contentCString.data(), contentCString.length());
         Vector<uint8_t> digest = cryptoDigest->computeHash();
+        ContentSecurityPolicyHash hash = std::make_pair(algorithm, digest);
         for (auto& policy : policies) {
-            if ((policy.get()->*allowed)(std::make_pair(algorithm, digest)))
+            if ((policy.get()->*allowed)(hash))
                 return true;
         }
     }
