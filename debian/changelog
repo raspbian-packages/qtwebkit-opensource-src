@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-38+rpi1) trixie-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-39+rpi1) trixie-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,15 @@ qtwebkit-opensource-src (5.212.0~alpha4-38+rpi1) trixie-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Fri, 07 Jun 2024 22:51:15 +0000
+ -- Raspbian forward porter <root@raspbian.org>  Sun, 14 Jul 2024 08:03:05 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-39) unstable; urgency=medium
+
+  * Add a patch from Fedora to fix build with GCC 14 (closes: #1075431).
+  * Update debian/libqt5webkit5.symbols for loong64.
+  * Bump Standards-Version to 4.7.0, no changes needed.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 05 Jul 2024 10:43:37 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-38) unstable; urgency=medium
 

@@ -12,5 +12,6 @@ libxml2_2.12.diff
 loongarch64.diff
 offlineasm_ruby_3.2.diff
 icu_75.1.diff
+gcc_14.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch
