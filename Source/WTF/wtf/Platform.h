@@ -103,6 +103,11 @@
 #define USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
 #endif /* MIPS */
 
+/* CPU(LOONGARCH64) - LoongArch 64-bit */
+#if defined(__loongarch64)
+#define WTF_CPU_LOONGARCH64 1
+#endif
+
 /* CPU(PPC64) - PowerPC 64-bit Big Endian */
 #if (  defined(__ppc64__)      \
     || defined(__PPC64__))     \
@@ -711,6 +716,7 @@
     || CPU(ARM64) \
     || CPU(S390X) \
     || CPU(MIPS64) \
+    || CPU(LOONGARCH64) \
     || CPU(PPC64) \
     || CPU(PPC64LE) \
     || CPU(RISCV64)
