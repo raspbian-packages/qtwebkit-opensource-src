@@ -56,7 +56,7 @@
 
 #elif defined(__GNUC__) && !defined(__CC_ARM) && !defined(__ARMCC__)
 
-#define WTF_EXPORT_DECLARATION __attribute__((visibility("default")))
+#define WTF_EXPORT_DECLARATION
 #define WTF_IMPORT_DECLARATION WTF_EXPORT_DECLARATION
 #define WTF_HIDDEN_DECLARATION __attribute__((visibility("hidden")))
 
