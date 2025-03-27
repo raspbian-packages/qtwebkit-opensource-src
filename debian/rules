@@ -12,11 +12,6 @@ export DEB_CPPFLAGS_MAINT_APPEND = -DNDEBUG
 export DEB_CXXFLAGS_MAINT_STRIP = -g
 export DEB_CXXFLAGS_MAINT_APPEND = -g1
 
-# See https://github.com/qtwebkit/qtwebkit/issues/626
-ifneq (,$(filter $(DEB_HOST_ARCH_CPU),mips mipsel))
-	export DEB_CXXFLAGS_MAINT_APPEND += -mfp32
-endif
-
 # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81426
 ifneq (,$(filter $(DEB_HOST_ARCH_CPU),sh3 sh4))
 	export DEB_CXXFLAGS_MAINT_STRIP += -O2
@@ -32,7 +27,7 @@ ifneq ($(DEB_HOST_ARCH),x32)
 endif
 
 # JIT is only supported on x86 / armhf / aarch64 / mips32
-#ifeq (,$(filter $(DEB_HOST_ARCH),amd64 arm64 armhf hurd-i386 i386 kfreebsd-amd64 kfreebsd-i386 mips mipsel))
+#ifeq (,$(filter $(DEB_HOST_ARCH),amd64 arm64 armhf hurd-i386 i386))
 	EXTRA_CMAKE_ARGUMENTS += -DENABLE_JIT=OFF
 #endif
 

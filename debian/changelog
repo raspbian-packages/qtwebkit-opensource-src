@@ -1,4 +1,4 @@
-qtwebkit-opensource-src (5.212.0~alpha4-39+rpi1) trixie-staging; urgency=medium
+qtwebkit-opensource-src (5.212.0~alpha4-42+rpi1) trixie-staging; urgency=medium
 
   [changes brought forward from 5.212.0~alpha2-5+rpi1 by Peter Michael Green <plugwash@raspbian.org> at Sat, 09 Dec 2017 00:03:30 +0000]
   * Update symbols file for raspbian.
@@ -7,7 +7,33 @@ qtwebkit-opensource-src (5.212.0~alpha4-39+rpi1) trixie-staging; urgency=medium
   * Try unsuccessfully to hack offlineasm to prevent generation of movw/movt
   * Disable JIT
 
- -- Raspbian forward porter <root@raspbian.org>  Sun, 14 Jul 2024 08:03:05 +0000
+ -- Peter Michael Green <plugwash@raspbian.org>  Thu, 27 Mar 2025 10:48:52 +0000
+
+qtwebkit-opensource-src (5.212.0~alpha4-42) unstable; urgency=medium
+
+  [ Pino Toscano ]
+  * Drop build flags for discontinued architectures, i.e.:
+    kfreebsd-amd64 kfreebsd-i386 mips mipsel.
+
+  [ Dmitry Shachnev ]
+  * Add a patch to fix build with ICU 76 (closes: #1092367).
+  * Update debian/libqt5webkit5.symbols from buildds’ logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Thu, 09 Jan 2025 14:39:01 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-41) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Fri, 25 Oct 2024 12:39:48 +0300
+
+qtwebkit-opensource-src (5.212.0~alpha4-40) experimental; urgency=medium
+
+  * Build against Qt 5.15.15.
+  * Update debian/watch to use GitHub API.
+  * Update debian/libqt5webkit5.symbols from the current build logs.
+
+ -- Dmitry Shachnev <mitya57@debian.org>  Wed, 04 Sep 2024 22:21:37 +0300
 
 qtwebkit-opensource-src (5.212.0~alpha4-39) unstable; urgency=medium
 

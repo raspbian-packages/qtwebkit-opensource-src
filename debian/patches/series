@@ -13,5 +13,6 @@ loongarch64.diff
 offlineasm_ruby_3.2.diff
 icu_75.1.diff
 gcc_14.diff
+icu_76.diff
 hack-offlineasm-to-prevent-generation-of.patch
 make-further-unsuccesful-changes-to-offl.patch
